@@ -24,7 +24,7 @@ FisioLife/
 Abre MySQL, phpMyAdmin o consola y ejecuta:
 
 ```sql
-CREATE DATABASE IF NOT EXISTS fisiolife_db;
+CREATE DATABASE IF NOT EXISTS clinica_fisioterapia;
 ```
 
 El backend creará automáticamente las tablas y el usuario administrador cuando arranque.
