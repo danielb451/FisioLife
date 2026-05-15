@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, Usuario } from '../../services/auth.service';
 
+
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule],

@@ -1,0 +1,142 @@
+<div class="pacientes-page">
+
+  <header class="page-header">
+    <div>
+      <h1>Gestión de Pacientes</h1>
+      <p>Administra los datos principales de los pacientes de la clínica.</p>
+    </div>
+
+    <a href="/dashboard" class="back-link">Volver al dashboard</a>
+  </header>
+
+  <section class="content-grid">
+
+    <div class="form-card">
+      <h2>{{ editando ? 'Editar paciente' : 'Registrar paciente' }}</h2>
+
+      <div class="alert success" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+
+      <div class="alert error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <form (ngSubmit)="guardarPaciente()">
+
+        <div class="form-row">
+          <div>
+            <label>Nombre *</label>
+            <input type="text" name="nombre" [(ngModel)]="paciente.nombre">
+          </div>
+
+          <div>
+            <label>Apellido *</label>
+            <input type="text" name="apellido" [(ngModel)]="paciente.apellido">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label>CI</label>
+            <input type="text" name="ci" [(ngModel)]="paciente.ci">
+          </div>
+
+          <div>
+            <label>Teléfono</label>
+            <input type="text" name="telefono" [(ngModel)]="paciente.telefono">
+          </div>
+        </div>
+
+        <label>Email</label>
+        <input type="email" name="email" [(ngModel)]="paciente.email">
+
+        <label>Dirección</label>
+        <input type="text" name="direccion" [(ngModel)]="paciente.direccion">
+
+        <div class="form-row">
+          <div>
+            <label>Fecha de nacimiento</label>
+            <input type="date" name="fecha_nacimiento" [(ngModel)]="paciente.fecha_nacimiento">
+          </div>
+
+          <div>
+            <label>Género</label>
+            <select name="genero" [(ngModel)]="paciente.genero">
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Motivo de consulta</label>
+        <textarea 
+          name="motivo_consulta"
+          rows="4"
+          [(ngModel)]="paciente.motivo_consulta">
+        </textarea>
+
+        <div class="buttons">
+          <button type="submit">
+            {{ editando ? 'Actualizar paciente' : 'Guardar paciente' }}
+          </button>
+
+          <button type="button" class="secondary" (click)="limpiarFormulario()" *ngIf="editando">
+            Cancelar
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <h2>Lista de pacientes</h2>
+
+        <input 
+          type="text"
+          placeholder="Buscar paciente..."
+          [(ngModel)]="busqueda"
+          (input)="buscarPaciente()"
+        >
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Paciente</th>
+            <th>CI</th>
+            <th>Teléfono</th>
+            <th>Género</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of pacientesFiltrados">
+            <td>
+              <strong>{{ p.nombre }} {{ p.apellido }}</strong>
+              <small>{{ p.email || 'Sin email' }}</small>
+            </td>
+            <td>{{ p.ci || '-' }}</td>
+            <td>{{ p.telefono || '-' }}</td>
+            <td>{{ p.genero }}</td>
+            <td class="actions">
+              <button class="edit" (click)="editarPaciente(p)">Editar</button>
+              <button class="delete" (click)="eliminarPaciente(p.id)">Eliminar</button>
+            </td>
+          </tr>
+
+          <tr *ngIf="pacientesFiltrados.length === 0">
+            <td colspan="5" class="empty">
+              No hay pacientes registrados.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+</div>

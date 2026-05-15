@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login';
 import { DashboardComponent } from './pages/dashboard/dashboard';
 import { authGuard } from './guards/auth-guard';
+import { PacientesComponent } from './pages/pacientes/pacientes';
 
 export const routes: Routes = [
   {
@@ -21,5 +22,10 @@ export const routes: Routes = [
   {
     path: '**',
     redirectTo: 'login'
-  }
+  },
+  {
+    path: 'pacientes',
+    component: PacientesComponent,
+    canActivate: [authGuard]
+  },
 ];
