@@ -1,0 +1,21 @@
+# Node
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Angular
+frontend/.angular/
+frontend/dist/
+frontend/node_modules/
+
+# Backend
+backend/node_modules/
+
+# Variables de entorno
+.env
+backend/.env
+frontend/.env
+
+# Sistema
+.DS_Store
+Thumbs.db

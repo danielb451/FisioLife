@@ -1,0 +1,51 @@
+<div class="login-page">
+  <section class="info-panel">
+    <div class="badge">FisioLife</div>
+    <h1>Administración para clínica fisioterapéutica</h1>
+    <p>
+      Gestiona pacientes, citas, tratamientos, fisioterapeutas y reportes desde un panel moderno y sencillo.
+    </p>
+    <div class="features">
+      <span>Pacientes</span>
+      <span>Citas</span>
+      <span>Tratamientos</span>
+      <span>Reportes</span>
+    </div>
+  </section>
+
+  <section class="login-card">
+    <div class="brand">
+      <div class="logo">FL</div>
+      <h2>Iniciar sesión</h2>
+      <p>Acceso administrativo</p>
+    </div>
+
+    <form (ngSubmit)="iniciarSesion()">
+      <label>Correo electrónico</label>
+      <input
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        placeholder="admin@fisio.com"
+      />
+
+      <label>Contraseña</label>
+      <input
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        placeholder="********"
+      />
+
+      <div class="error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <button type="submit" [disabled]="cargando">
+        {{ cargando ? 'Ingresando...' : 'Entrar al sistema' }}
+      </button>
+    </form>
+
+    <small>Usuario de prueba: admin@fisio.com / 123456</small>
+  </section>
+</div>

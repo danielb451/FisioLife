@@ -1,0 +1,82 @@
+<div class="dashboard-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">FL</div>
+      <div>
+        <h2>FisioLife</h2>
+        <span>Sistema clínico</span>
+      </div>
+    </div>
+
+    <nav>
+      <a class="active">Dashboard</a>
+      <a>Pacientes</a>
+      <a>Citas</a>
+      <a>Tratamientos</a>
+      <a>Fisioterapeutas</a>
+      <a>Reportes</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div>
+        <h1>Panel Administrativo</h1>
+        <p>Bienvenido, {{ usuario?.nombre }} · Rol: {{ usuario?.rol }}</p>
+      </div>
+
+      <button (click)="cerrarSesion()">Cerrar sesión</button>
+    </header>
+
+    <section class="cards">
+      <article class="card">
+        <h3>Pacientes</h3>
+        <strong>0</strong>
+        <p>Pacientes registrados</p>
+      </article>
+
+      <article class="card">
+        <h3>Citas de hoy</h3>
+        <strong>0</strong>
+        <p>Sesiones programadas</p>
+      </article>
+
+      <article class="card">
+        <h3>Tratamientos</h3>
+        <strong>0</strong>
+        <p>Tratamientos activos</p>
+      </article>
+
+      <article class="card">
+        <h3>Usuarios</h3>
+        <strong>1</strong>
+        <p>Personal autorizado</p>
+      </article>
+    </section>
+
+    <section class="panel-grid">
+      <article class="panel">
+        <h2>Módulos principales</h2>
+        <div class="module-list">
+          <div>
+            <strong>Pacientes</strong>
+            <span>Registro, datos personales e historial.</span>
+          </div>
+          <div>
+            <strong>Citas</strong>
+            <span>Agenda de sesiones fisioterapéuticas.</span>
+          </div>
+          <div>
+            <strong>Tratamientos</strong>
+            <span>Seguimiento de terapias y evolución.</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel highlight">
+        <h2>Estado del sistema</h2>
+        <p>Backend conectado con MySQL y autenticación JWT lista para ampliar el proyecto.</p>
+      </article>
+    </section>
+  </main>
+</div>
