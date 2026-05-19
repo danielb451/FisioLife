@@ -3,6 +3,7 @@ import { LoginComponent } from './pages/login/login';
 import { DashboardComponent } from './pages/dashboard/dashboard';
 import { authGuard } from './guards/auth-guard';
 import { PacientesComponent } from './pages/pacientes/pacientes';
+import { CitasComponent } from './pages/citas/citas';
 
 export const routes: Routes = [
   {
@@ -26,6 +27,11 @@ export const routes: Routes = [
   {
     path: 'pacientes',
     component: PacientesComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'citas',
+    component: CitasComponent,
     canActivate: [authGuard]
   },
 ];

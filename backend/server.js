@@ -5,6 +5,7 @@ require('dotenv').config();
 const initDb = require('./config/initDb');
 const authRoutes = require('./routes/auth.routes');
 const pacientesRoutes = require('./routes/pacientes.routes');
+const citasRoutes = require('./routes/citas.routes');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use('/api/pacientes', pacientesRoutes);
+app.use('/api/citas', citasRoutes);
 
 app.get('/', (req, res) => {
   res.json({
