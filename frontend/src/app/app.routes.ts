@@ -4,6 +4,7 @@ import { DashboardComponent } from './pages/dashboard/dashboard';
 import { authGuard } from './guards/auth-guard';
 import { PacientesComponent } from './pages/pacientes/pacientes';
 import { CitasComponent } from './pages/citas/citas';
+import { FisioterapeutasComponent } from './pages/fisioterapeutas/fisioterapeutas';
 
 export const routes: Routes = [
   {
@@ -32,6 +33,11 @@ export const routes: Routes = [
   {
     path: 'citas',
     component: CitasComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'fisioterapeutas',
+    component: FisioterapeutasComponent,
     canActivate: [authGuard]
   },
 ];

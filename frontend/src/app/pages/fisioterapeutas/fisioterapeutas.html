@@ -1,0 +1,218 @@
+<div class="fisioterapeutas-page">
+
+  <header class="page-header">
+    <div>
+      <h1>Gestión de Fisioterapeutas</h1>
+      <p>Administra el personal profesional de la clínica fisioterapéutica.</p>
+    </div>
+
+    <a routerLink="/dashboard" class="back-link">
+      Volver al dashboard
+    </a>
+  </header>
+
+  <section class="content-grid">
+
+    <div class="form-card">
+      <h2>{{ editando ? 'Editar fisioterapeuta' : 'Registrar fisioterapeuta' }}</h2>
+
+      <div class="alert success" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+
+      <div class="alert error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <form (ngSubmit)="guardarFisioterapeuta()">
+
+        <div class="form-row">
+          <div>
+            <label>Nombre *</label>
+            <input 
+              type="text"
+              name="nombre"
+              [(ngModel)]="fisioterapeuta.nombre"
+              placeholder="Ej: Andrea"
+            >
+          </div>
+
+          <div>
+            <label>Apellido *</label>
+            <input 
+              type="text"
+              name="apellido"
+              [(ngModel)]="fisioterapeuta.apellido"
+              placeholder="Ej: Vargas"
+            >
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label>CI</label>
+            <input 
+              type="text"
+              name="ci"
+              [(ngModel)]="fisioterapeuta.ci"
+              placeholder="Ej: 9876543"
+            >
+          </div>
+
+          <div>
+            <label>Teléfono</label>
+            <input 
+              type="text"
+              name="telefono"
+              [(ngModel)]="fisioterapeuta.telefono"
+              placeholder="Ej: 76543210"
+            >
+          </div>
+        </div>
+
+        <label>Email</label>
+        <input 
+          type="email"
+          name="email"
+          [(ngModel)]="fisioterapeuta.email"
+          placeholder="Ej: fisio@gmail.com"
+        >
+
+        <label>Dirección</label>
+        <input 
+          type="text"
+          name="direccion"
+          [(ngModel)]="fisioterapeuta.direccion"
+          placeholder="Ej: Av. Blanco Galindo #123"
+        >
+
+        <label>Especialidad *</label>
+        <input 
+          type="text"
+          name="especialidad"
+          [(ngModel)]="fisioterapeuta.especialidad"
+          placeholder="Ej: Rehabilitación deportiva, traumatología, neurología..."
+        >
+
+        <label>Horario de atención</label>
+        <input 
+          type="text"
+          name="horario_atencion"
+          [(ngModel)]="fisioterapeuta.horario_atencion"
+          placeholder="Ej: Lunes a Viernes 08:00 - 16:00"
+        >
+
+        <div class="form-row">
+          <div>
+            <label>Fecha de contratación</label>
+            <input 
+              type="date"
+              name="fecha_contratacion"
+              [(ngModel)]="fisioterapeuta.fecha_contratacion"
+            >
+          </div>
+
+          <div>
+            <label>Estado laboral</label>
+            <select name="estado_laboral" [(ngModel)]="fisioterapeuta.estado_laboral">
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+              <option value="Vacaciones">Vacaciones</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button type="submit">
+            {{ editando ? 'Actualizar fisioterapeuta' : 'Guardar fisioterapeuta' }}
+          </button>
+
+          <button 
+            type="button"
+            class="secondary"
+            (click)="limpiarFormulario()"
+            *ngIf="editando"
+          >
+            Cancelar
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="table-card">
+
+      <div class="table-header">
+        <div>
+          <h2>Lista de fisioterapeutas</h2>
+          <p>Total: {{ fisioterapeutasFiltrados.length }}</p>
+        </div>
+
+        <input 
+          type="text"
+          placeholder="Buscar por nombre, CI, especialidad..."
+          [(ngModel)]="busqueda"
+          (input)="buscarFisioterapeuta()"
+        >
+      </div>
+
+      <div class="loading" *ngIf="cargando">
+        Cargando fisioterapeutas...
+      </div>
+
+      <div class="table-container" *ngIf="!cargando">
+        <table>
+          <thead>
+            <tr>
+              <th>Fisioterapeuta</th>
+              <th>Especialidad</th>
+              <th>Teléfono</th>
+              <th>Horario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let f of fisioterapeutasFiltrados">
+              <td>
+                <strong>{{ f.nombre }} {{ f.apellido }}</strong>
+                <small>CI: {{ f.ci || 'Sin CI' }}</small>
+                <small>{{ f.email || 'Sin email' }}</small>
+              </td>
+
+              <td>{{ f.especialidad }}</td>
+              <td>{{ f.telefono || '-' }}</td>
+              <td>{{ f.horario_atencion || '-' }}</td>
+
+              <td>
+                <span class="estado" [ngClass]="obtenerClaseEstado(f.estado_laboral)">
+                  {{ f.estado_laboral || 'Activo' }}
+                </span>
+              </td>
+
+              <td class="actions">
+                <button class="edit" (click)="editarFisioterapeuta(f)">
+                  Editar
+                </button>
+
+                <button class="delete" (click)="eliminarFisioterapeuta(f.id)">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="fisioterapeutasFiltrados.length === 0">
+              <td colspan="6" class="empty">
+                No hay fisioterapeutas registrados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
