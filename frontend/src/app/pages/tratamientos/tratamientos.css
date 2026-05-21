@@ -1,0 +1,71 @@
+.tratamientos-page {
+  margin-top: 20px;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 11px 15px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button[type="submit"] {
+  background: #0f8b8d;
+  color: white;
+}
+
+.secondary {
+  background: #e8eeee;
+}
+
+.alert {
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.success {
+  background: #e7f8ef;
+  color: #167143;
+}
+
+.error {
+  background: #ffe8e8;
+  color: #b00020;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #e8f7f4;
+}
+
+th,
+td {
+  padding: 13px;
+  border-bottom: 1px solid #e5eeee;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit {
+  background: #f0c94b;
+}
+
+.delete {
+  background: #dc3545;
+  color: white;
+}

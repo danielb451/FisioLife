@@ -7,6 +7,8 @@ const authRoutes = require('./routes/auth.routes');
 const pacientesRoutes = require('./routes/pacientes.routes');
 const citasRoutes = require('./routes/citas.routes');
 const fisioterapeutasRoutes = require('./routes/fisioterapeutas.routes');
+const tratamientosRoutes = require('./routes/tratamientos.routes');
+const evolucionesRoutes = require('./routes/evoluciones.routes');
 
 const app = express();
 
@@ -19,6 +21,8 @@ app.use(express.json());
 app.use('/api/pacientes', pacientesRoutes);
 app.use('/api/citas', citasRoutes);
 app.use('/api/fisioterapeutas', fisioterapeutasRoutes);
+app.use('/api/tratamientos', tratamientosRoutes);
+app.use('/api/evoluciones', evolucionesRoutes);
 
 app.get('/', (req, res) => {
   res.json({

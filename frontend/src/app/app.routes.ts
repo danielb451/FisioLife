@@ -5,6 +5,8 @@ import { authGuard } from './guards/auth-guard';
 import { PacientesComponent } from './pages/pacientes/pacientes';
 import { CitasComponent } from './pages/citas/citas';
 import { FisioterapeutasComponent } from './pages/fisioterapeutas/fisioterapeutas';
+import { TratamientosComponent } from './pages/tratamientos/tratamientos';
+import { EvolucionesComponent } from './pages/evoluciones/evoluciones';
 
 export const routes: Routes = [
   {
@@ -37,7 +39,18 @@ export const routes: Routes = [
   },
   {
     path: 'fisioterapeutas',
-    component: FisioterapeutasComponent,
+      component: FisioterapeutasComponent,
+      canActivate: [authGuard]
+    },
+    {
+    path: 'tratamientos',
+    component: TratamientosComponent,
+    canActivate: [authGuard]
+  },
+
+  {
+    path: 'evoluciones',
+    component: EvolucionesComponent,
     canActivate: [authGuard]
   },
 ];

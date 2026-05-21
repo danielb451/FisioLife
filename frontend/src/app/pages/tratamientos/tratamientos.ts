@@ -11,12 +11,12 @@ import {
 import {
   PacientesService,
   Paciente
-} from '../../services/pacientes';
+} from '../../services/pacientes.service';
 
 import {
   FisioterapeutasService,
   Fisioterapeuta
-} from '../../services/fisioterapeutas';
+} from '../../services/fisioterapeutas.service';
 
 @Component({
   selector: 'app-tratamientos',
