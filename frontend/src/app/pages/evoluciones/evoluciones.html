@@ -1,0 +1,135 @@
+<div class="evoluciones-page">
+  <header class="page-header">
+    <div>
+      <h1>Evoluciones Clínicas</h1>
+      <p>Registra seguimiento y progreso terapéutico.</p>
+    </div>
+    <a routerLink="/dashboard" class="back-link">
+      Volver al dashboard
+    </a>
+  </header>
+
+  <section class="content-grid">
+    <div class="form-card">
+      <h2>Registrar evolución</h2>
+
+      <div class="alert success" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+
+      <div class="alert error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <label>Tratamiento *</label>
+      <select
+        name="tratamiento_id"
+        [(ngModel)]="evolucion.tratamiento_id"
+        (change)="cargarEvoluciones()"
+      >
+        <option [ngValue]="null">
+          Seleccione tratamiento
+        </option>
+        <option
+          *ngFor="let t of tratamientos"
+          [ngValue]="t.id"
+        >
+          {{ t.paciente_nombre }} {{ t.paciente_apellido }}
+        </option>
+      </select>
+
+      <div class="form-row">
+        <div>
+          <label>Sesión *</label>
+          <input
+            type="number"
+            name="numero_sesion"
+            [(ngModel)]="evolucion.numero_sesion"
+          />
+        </div>
+        <div>
+          <label>Fecha *</label>
+          <input
+            type="date"
+            name="fecha"
+            [(ngModel)]="evolucion.fecha"
+          />
+        </div>
+      </div>
+
+      <label>Procedimientos</label>
+      <textarea
+        rows="3"
+        name="procedimientos"
+        [(ngModel)]="evolucion.procedimientos"
+      ></textarea>
+
+      <label>Observaciones</label>
+      <textarea
+        rows="3"
+        name="observaciones"
+        [(ngModel)]="evolucion.observaciones"
+      ></textarea>
+
+      <div class="form-row">
+        <div>
+          <label>Dolor</label>
+          <input
+            type="text"
+            name="dolor"
+            [(ngModel)]="evolucion.dolor"
+          />
+        </div>
+        <div>
+          <label>Movilidad</label>
+          <input
+            type="text"
+            name="movilidad"
+            [(ngModel)]="evolucion.movilidad"
+          />
+        </div>
+      </div>
+
+      <label>Recomendaciones</label>
+      <textarea
+        rows="3"
+        name="recomendaciones"
+        [(ngModel)]="evolucion.recomendaciones"
+      ></textarea>
+
+      <div class="buttons">
+        <button (click)="guardarEvolucion()">
+          Guardar evolución
+        </button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <h2>Historial de evoluciones</h2>
+      <table *ngIf="evoluciones.length > 0; else sinEvoluciones">
+        <thead>
+          <tr>
+            <th>Sesión</th>
+            <th>Fecha</th>
+            <th>Dolor</th>
+            <th>Movilidad</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of evoluciones">
+            <td>{{ e.numero_sesion }}</td>
+            <td>{{ e.fecha }}</td>
+            <td>{{ e.dolor }}</td>
+            <td>{{ e.movilidad }}</td>
+            <td>{{ e.observaciones }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #sinEvoluciones>
+        <p class="no-data">No hay evoluciones registradas</p>
+      </ng-template>
+    </div>
+  </section>
+</div>
