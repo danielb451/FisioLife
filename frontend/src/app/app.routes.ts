@@ -7,6 +7,7 @@ import { CitasComponent } from './pages/citas/citas';
 import { FisioterapeutasComponent } from './pages/fisioterapeutas/fisioterapeutas';
 import { TratamientosComponent } from './pages/tratamientos/tratamientos';
 import { EvolucionesComponent } from './pages/evoluciones/evoluciones';
+import { EspecialidadesComponent } from './pages/especialidades/especialidades';
 
 export const routes: Routes = [
   {
@@ -51,6 +52,11 @@ export const routes: Routes = [
   {
     path: 'evoluciones',
     component: EvolucionesComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'especialidades',
+    component: EspecialidadesComponent,
     canActivate: [authGuard]
   },
 ];

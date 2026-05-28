@@ -9,6 +9,7 @@ const citasRoutes = require('./routes/citas.routes');
 const fisioterapeutasRoutes = require('./routes/fisioterapeutas.routes');
 const tratamientosRoutes = require('./routes/tratamientos.routes');
 const evolucionesRoutes = require('./routes/evoluciones.routes');
+const especialidadesRoutes = require('./routes/especialidades.routes');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/citas', citasRoutes);
 app.use('/api/fisioterapeutas', fisioterapeutasRoutes);
 app.use('/api/tratamientos', tratamientosRoutes);
 app.use('/api/evoluciones', evolucionesRoutes);
+app.use('/api/especialidades', especialidadesRoutes);
 
 app.get('/', (req, res) => {
   res.json({
