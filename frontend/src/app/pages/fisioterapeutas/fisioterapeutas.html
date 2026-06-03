@@ -1,9 +1,9 @@
 <div class="fisioterapeutas-page">
-
   <header class="page-header">
     <div>
+      <span class="page-label">Personal clínico</span>
       <h1>Gestión de Fisioterapeutas</h1>
-      <p>Administra el personal profesional de la clínica fisioterapéutica.</p>
+      <p>Administra los datos, especialidades, horarios y estado laboral del personal fisioterapéutico.</p>
     </div>
 
     <a routerLink="/dashboard" class="back-link">
@@ -11,10 +11,50 @@
     </a>
   </header>
 
-  <section class="content-grid">
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="stat-icon">🧑‍⚕️</span>
+      <div>
+        <h3>{{ fisioterapeutas.length }}</h3>
+        <p>Total registrados</p>
+      </div>
+    </article>
 
+    <article class="stat-card">
+      <span class="stat-icon">✅</span>
+      <div>
+        <h3>{{ totalActivos() }}</h3>
+        <p>Activos</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">🌤️</span>
+      <div>
+        <h3>{{ totalVacaciones() }}</h3>
+        <p>En vacaciones</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">⛔</span>
+      <div>
+        <h3>{{ totalInactivos() }}</h3>
+        <p>Inactivos</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="content-grid">
     <div class="form-card">
-      <h2>{{ editando ? 'Editar fisioterapeuta' : 'Registrar fisioterapeuta' }}</h2>
+      <div class="card-title">
+        <div>
+          <h2>{{ editando ? 'Editar fisioterapeuta' : 'Registrar fisioterapeuta' }}</h2>
+          <p>
+            {{ editando ? 'Actualiza los datos del fisioterapeuta seleccionado.' : 'Completa los datos para registrar un nuevo profesional.' }}
+          </p>
+        </div>
+      </div>
 
       <div class="alert success" *ngIf="mensaje">
         {{ mensaje }}
@@ -25,91 +65,90 @@
       </div>
 
       <form (ngSubmit)="guardarFisioterapeuta()">
-
         <div class="form-row">
           <div>
             <label>Nombre *</label>
-            <input 
+            <input
               type="text"
               name="nombre"
               [(ngModel)]="fisioterapeuta.nombre"
               placeholder="Ej: Andrea"
-            >
+            />
           </div>
 
           <div>
             <label>Apellido *</label>
-            <input 
+            <input
               type="text"
               name="apellido"
               [(ngModel)]="fisioterapeuta.apellido"
               placeholder="Ej: Vargas"
-            >
+            />
           </div>
         </div>
 
         <div class="form-row">
           <div>
             <label>CI</label>
-            <input 
+            <input
               type="text"
               name="ci"
               [(ngModel)]="fisioterapeuta.ci"
               placeholder="Ej: 9876543"
-            >
+            />
           </div>
 
           <div>
             <label>Teléfono</label>
-            <input 
+            <input
               type="text"
               name="telefono"
               [(ngModel)]="fisioterapeuta.telefono"
               placeholder="Ej: 76543210"
-            >
+            />
           </div>
         </div>
 
         <label>Email</label>
-        <input 
+        <input
           type="email"
           name="email"
           [(ngModel)]="fisioterapeuta.email"
           placeholder="Ej: fisio@gmail.com"
-        >
+        />
 
         <label>Dirección</label>
-        <input 
+        <input
           type="text"
           name="direccion"
           [(ngModel)]="fisioterapeuta.direccion"
           placeholder="Ej: Av. Blanco Galindo #123"
-        >
+        />
 
         <label>Especialidad *</label>
-        <input 
+        <input
           type="text"
           name="especialidad"
           [(ngModel)]="fisioterapeuta.especialidad"
           placeholder="Ej: Rehabilitación deportiva, traumatología, neurología..."
-        >
+        />
 
         <label>Horario de atención</label>
-        <input 
+        <input
           type="text"
           name="horario_atencion"
           [(ngModel)]="fisioterapeuta.horario_atencion"
           placeholder="Ej: Lunes a Viernes 08:00 - 16:00"
-        >
+        />
 
         <div class="form-row">
           <div>
             <label>Fecha de contratación</label>
-            <input 
+            <input
               type="date"
               name="fecha_contratacion"
               [(ngModel)]="fisioterapeuta.fecha_contratacion"
-            >
+            />
           </div>
 
           <div>
@@ -123,11 +162,11 @@
         </div>
 
         <div class="buttons">
-          <button type="submit">
-            {{ editando ? 'Actualizar fisioterapeuta' : 'Guardar fisioterapeuta' }}
+          <button type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : (editando ? 'Actualizar fisioterapeuta' : 'Guardar fisioterapeuta') }}
           </button>
 
-          <button 
+          <button
             type="button"
             class="secondary"
             (click)="limpiarFormulario()"
@@ -136,24 +175,39 @@
             Cancelar
           </button>
         </div>
-
       </form>
     </div>
 
     <div class="table-card">
-
       <div class="table-header">
         <div>
           <h2>Lista de fisioterapeutas</h2>
-          <p>Total: {{ fisioterapeutasFiltrados.length }}</p>
+          <p>Total mostrado: {{ fisioterapeutasFiltrados.length }}</p>
         </div>
 
-        <input 
+        <button type="button" class="reload-btn" (click)="cargarFisioterapeutas()">
+          Actualizar
+        </button>
+      </div>
+
+      <div class="filters">
+        <input
           type="text"
-          placeholder="Buscar por nombre, CI, especialidad..."
+          placeholder="Buscar por nombre, CI, especialidad, teléfono..."
           [(ngModel)]="busqueda"
           (input)="buscarFisioterapeuta()"
+        />
+
+        <select
+          name="filtroEstado"
+          [(ngModel)]="filtroEstado"
+          (change)="buscarFisioterapeuta()"
         >
+          <option value="Todos">Todos los estados</option>
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+          <option value="Vacaciones">Vacaciones</option>
+        </select>
       </div>
 
       <div class="loading" *ngIf="cargando">
@@ -175,15 +229,15 @@
 
           <tbody>
             <tr *ngFor="let f of fisioterapeutasFiltrados">
-              <td>
+              <td class="fisio-cell">
                 <strong>{{ f.nombre }} {{ f.apellido }}</strong>
                 <small>CI: {{ f.ci || 'Sin CI' }}</small>
                 <small>{{ f.email || 'Sin email' }}</small>
               </td>
 
-              <td>{{ f.especialidad }}</td>
+              <td>{{ f.especialidad || '-' }}</td>
               <td>{{ f.telefono || '-' }}</td>
-              <td>{{ f.horario_atencion || '-' }}</td>
+              <td class="horario-cell">{{ f.horario_atencion || '-' }}</td>
 
               <td>
                 <span class="estado" [ngClass]="obtenerClaseEstado(f.estado_laboral)">
@@ -191,28 +245,27 @@
                 </span>
               </td>
 
-              <td class="actions">
-                <button class="edit" (click)="editarFisioterapeuta(f)">
-                  Editar
-                </button>
+              <td>
+                <div class="actions">
+                  <button type="button" class="edit" (click)="editarFisioterapeuta(f)">
+                    Editar
+                  </button>
 
-                <button class="delete" (click)="eliminarFisioterapeuta(f.id)">
-                  Eliminar
-                </button>
+                  <button type="button" class="delete" (click)="eliminarFisioterapeuta(f.id)">
+                    Eliminar
+                  </button>
+                </div>
               </td>
             </tr>
 
             <tr *ngIf="fisioterapeutasFiltrados.length === 0">
               <td colspan="6" class="empty">
-                No hay fisioterapeutas registrados.
+                No hay fisioterapeutas registrados con esos filtros.
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-
     </div>
-
   </section>
-
 </div>

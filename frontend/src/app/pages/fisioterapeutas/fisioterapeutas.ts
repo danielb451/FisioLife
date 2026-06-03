@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -13,14 +13,17 @@ import { FisioterapeutasService, Fisioterapeuta } from '../../services/fisiotera
   styleUrl: './fisioterapeutas.css'
 })
 export class FisioterapeutasComponent implements OnInit {
-
   fisioterapeutas: Fisioterapeuta[] = [];
   fisioterapeutasFiltrados: Fisioterapeuta[] = [];
 
   busqueda = '';
+  filtroEstado = 'Todos';
+
   mensaje = '';
   error = '';
+
   cargando = false;
+  guardando = false;
 
   editando = false;
   idEditando: number | null = null;
@@ -38,7 +41,10 @@ export class FisioterapeutasComponent implements OnInit {
     estado_laboral: 'Activo'
   };
 
-  constructor(private fisioterapeutasService: FisioterapeutasService) {}
+  constructor(
+    private fisioterapeutasService: FisioterapeutasService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.cargarFisioterapeutas();
@@ -47,16 +53,25 @@ export class FisioterapeutasComponent implements OnInit {
   cargarFisioterapeutas(): void {
     this.cargando = true;
     this.error = '';
+    this.cdr.detectChanges();
 
     this.fisioterapeutasService.listar().subscribe({
       next: (data: Fisioterapeuta[]) => {
+        console.log('Fisioterapeutas recibidos:', data);
+
         this.fisioterapeutas = data;
-        this.fisioterapeutasFiltrados = data;
+        this.fisioterapeutasFiltrados = [...data];
+
         this.cargando = false;
+        this.cdr.detectChanges();
       },
-      error: (err: { error?: { mensaje?: string } }) => {
+      error: (err: any) => {
+        console.error('Error al cargar fisioterapeutas:', err);
+
         this.error = 'No se pudieron cargar los fisioterapeutas. Revisa que el backend esté encendido.';
         this.cargando = false;
+
+        this.cdr.detectChanges();
       }
     });
   }
@@ -70,30 +85,52 @@ export class FisioterapeutasComponent implements OnInit {
       !this.fisioterapeuta.apellido.trim() ||
       !this.fisioterapeuta.especialidad.trim()
     ) {
-      this.error = 'Nombre, apellido y especialidad son obligatorios';
+      this.error = 'Nombre, apellido y especialidad son obligatorios.';
+      this.cdr.detectChanges();
       return;
     }
 
+    this.guardando = true;
+    this.cdr.detectChanges();
+
     if (this.editando && this.idEditando !== null) {
       this.fisioterapeutasService.actualizar(this.idEditando, this.fisioterapeuta).subscribe({
-        next: (res: { mensaje?: string }) => {
-          this.mensaje = res.mensaje || 'Fisioterapeuta actualizado correctamente';
+        next: (res: any) => {
+          this.mensaje = res.mensaje || 'Fisioterapeuta actualizado correctamente.';
+          this.guardando = false;
+
           this.limpiarFormulario();
           this.cargarFisioterapeutas();
+
+          this.cdr.detectChanges();
         },
-        error: (err: { error?: { mensaje?: string } }) => {
-          this.error = err.error?.mensaje || 'Error al actualizar fisioterapeuta';
+        error: (err: any) => {
+          console.error('Error al actualizar fisioterapeuta:', err);
+
+          this.error = err.error?.mensaje || 'Error al actualizar fisioterapeuta.';
+          this.guardando = false;
+
+          this.cdr.detectChanges();
         }
       });
     } else {
       this.fisioterapeutasService.crear(this.fisioterapeuta).subscribe({
-        next: (res: { mensaje?: string }) => {
-          this.mensaje = res.mensaje || 'Fisioterapeuta registrado correctamente';
+        next: (res: any) => {
+          this.mensaje = res.mensaje || 'Fisioterapeuta registrado correctamente.';
+          this.guardando = false;
+
           this.limpiarFormulario();
           this.cargarFisioterapeutas();
+
+          this.cdr.detectChanges();
         },
-        error: (err: { error?: { mensaje?: string } }) => {
-          this.error = err.error?.mensaje || 'Error al registrar fisioterapeuta';
+        error: (err: any) => {
+          console.error('Error al registrar fisioterapeuta:', err);
+
+          this.error = err.error?.mensaje || 'Error al registrar fisioterapeuta.';
+          this.guardando = false;
+
+          this.cdr.detectChanges();
         }
       });
     }
@@ -118,6 +155,11 @@ export class FisioterapeutasComponent implements OnInit {
       estado_laboral: f.estado_laboral || 'Activo'
     };
 
+    this.mensaje = '';
+    this.error = '';
+
+    this.cdr.detectChanges();
+
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
@@ -131,13 +173,20 @@ export class FisioterapeutasComponent implements OnInit {
 
     if (!confirmar) return;
 
+    this.mensaje = '';
+    this.error = '';
+
     this.fisioterapeutasService.eliminar(id).subscribe({
-      next: (res: { mensaje?: string }) => {
-        this.mensaje = res.mensaje || 'Fisioterapeuta eliminado correctamente';
+      next: (res: any) => {
+        this.mensaje = res.mensaje || 'Fisioterapeuta eliminado correctamente.';
         this.cargarFisioterapeutas();
+        this.cdr.detectChanges();
       },
-      error: (err: { error?: { mensaje?: string } }) => {
-        this.error = err.error?.mensaje || 'Error al eliminar fisioterapeuta';
+      error: (err: any) => {
+        console.error('Error al eliminar fisioterapeuta:', err);
+
+        this.error = err.error?.mensaje || 'Error al eliminar fisioterapeuta.';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -145,6 +194,7 @@ export class FisioterapeutasComponent implements OnInit {
   limpiarFormulario(): void {
     this.editando = false;
     this.idEditando = null;
+    this.guardando = false;
 
     this.fisioterapeuta = {
       nombre: '',
@@ -158,25 +208,33 @@ export class FisioterapeutasComponent implements OnInit {
       fecha_contratacion: '',
       estado_laboral: 'Activo'
     };
+
+    this.cdr.detectChanges();
   }
 
   buscarFisioterapeuta(): void {
     const texto = this.busqueda.toLowerCase().trim();
 
-    if (!texto) {
-      this.fisioterapeutasFiltrados = this.fisioterapeutas;
-      return;
-    }
+    this.fisioterapeutasFiltrados = this.fisioterapeutas.filter((f) => {
+      const coincideTexto =
+        !texto ||
+        (f.nombre || '').toLowerCase().includes(texto) ||
+        (f.apellido || '').toLowerCase().includes(texto) ||
+        (f.ci || '').toLowerCase().includes(texto) ||
+        (f.telefono || '').toLowerCase().includes(texto) ||
+        (f.email || '').toLowerCase().includes(texto) ||
+        (f.direccion || '').toLowerCase().includes(texto) ||
+        (f.especialidad || '').toLowerCase().includes(texto) ||
+        (f.horario_atencion || '').toLowerCase().includes(texto) ||
+        (f.estado_laboral || '').toLowerCase().includes(texto);
 
-    this.fisioterapeutasFiltrados = this.fisioterapeutas.filter((f) =>
-      f.nombre.toLowerCase().includes(texto) ||
-      f.apellido.toLowerCase().includes(texto) ||
-      (f.ci || '').toLowerCase().includes(texto) ||
-      (f.telefono || '').toLowerCase().includes(texto) ||
-      (f.email || '').toLowerCase().includes(texto) ||
-      (f.especialidad || '').toLowerCase().includes(texto) ||
-      (f.estado_laboral || '').toLowerCase().includes(texto)
-    );
+      const coincideEstado =
+        this.filtroEstado === 'Todos' || f.estado_laboral === this.filtroEstado;
+
+      return coincideTexto && coincideEstado;
+    });
+
+    this.cdr.detectChanges();
   }
 
   obtenerClaseEstado(estado: string | undefined): string {
@@ -190,5 +248,17 @@ export class FisioterapeutasComponent implements OnInit {
       default:
         return 'estado-activo';
     }
+  }
+
+  totalActivos(): number {
+    return this.fisioterapeutas.filter((f) => f.estado_laboral === 'Activo').length;
+  }
+
+  totalVacaciones(): number {
+    return this.fisioterapeutas.filter((f) => f.estado_laboral === 'Vacaciones').length;
+  }
+
+  totalInactivos(): number {
+    return this.fisioterapeutas.filter((f) => f.estado_laboral === 'Inactivo').length;
   }
 }

@@ -22,10 +22,6 @@ export class EspecialidadesService {
     return this.http.get<Especialidad[]>(this.apiUrl);
   }
 
-  obtenerEspecialidadPorId(id: number): Observable<Especialidad> {
-    return this.http.get<Especialidad>(`${this.apiUrl}/${id}`);
-  }
-
   crearEspecialidad(especialidad: Especialidad): Observable<any> {
     return this.http.post(this.apiUrl, especialidad);
   }

@@ -1,17 +1,58 @@
 <div class="evoluciones-page">
   <header class="page-header">
     <div>
+      <span class="page-label">Seguimiento terapéutico</span>
       <h1>Evoluciones Clínicas</h1>
-      <p>Registra seguimiento y progreso terapéutico.</p>
+      <p>Registra el progreso, procedimientos y recomendaciones de cada sesión terapéutica.</p>
     </div>
+
     <a routerLink="/dashboard" class="back-link">
       Volver al dashboard
     </a>
   </header>
 
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="stat-icon">📋</span>
+      <div>
+        <h3>{{ tratamientos.length }}</h3>
+        <p>Tratamientos disponibles</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">📈</span>
+      <div>
+        <h3>{{ totalEvoluciones() }}</h3>
+        <p>Evoluciones registradas</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">🔢</span>
+      <div>
+        <h3>{{ obtenerUltimaSesion() }}</h3>
+        <p>Última sesión</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">📅</span>
+      <div>
+        <h3 class="date-stat">{{ ultimaFecha() }}</h3>
+        <p>Última evolución</p>
+      </div>
+    </article>
+  </section>
+
   <section class="content-grid">
     <div class="form-card">
-      <h2>Registrar evolución</h2>
+      <div class="card-title">
+        <div>
+          <h2>Registrar evolución</h2>
+          <p>Selecciona un tratamiento y registra el avance de la sesión.</p>
+        </div>
+      </div>
 
       <div class="alert success" *ngIf="mensaje">
         {{ mensaje }}
@@ -21,115 +62,225 @@
         {{ error }}
       </div>
 
-      <label>Tratamiento *</label>
-      <select
-        name="tratamiento_id"
-        [(ngModel)]="evolucion.tratamiento_id"
-        (change)="cargarEvoluciones()"
-      >
-        <option [ngValue]="null">
-          Seleccione tratamiento
-        </option>
-        <option
-          *ngFor="let t of tratamientos"
-          [ngValue]="t.id"
+      <form (ngSubmit)="guardarEvolucion()">
+        <label>Tratamiento *</label>
+        <select
+          name="tratamiento_id"
+          [(ngModel)]="evolucion.tratamiento_id"
+          (change)="cargarEvoluciones()"
         >
-          {{ t.paciente_nombre }} {{ t.paciente_apellido }}
-        </option>
-      </select>
+          <option [ngValue]="null">Seleccione tratamiento</option>
 
-      <div class="form-row">
-        <div>
-          <label>Sesión *</label>
-          <input
-            type="number"
-            name="numero_sesion"
-            [(ngModel)]="evolucion.numero_sesion"
-          />
+          <option
+            *ngFor="let t of tratamientos"
+            [ngValue]="t.id"
+          >
+            {{ t.paciente_nombre }} {{ t.paciente_apellido }} -
+            {{ t.diagnostico || 'Sin diagnóstico' }}
+          </option>
+        </select>
+
+        <div class="selected-treatment" *ngIf="obtenerTratamientoSeleccionado() as tratamiento">
+          <strong>Tratamiento seleccionado</strong>
+          <span>
+            Paciente:
+            {{ tratamiento.paciente_nombre }}
+            {{ tratamiento.paciente_apellido }}
+          </span>
+          <span>
+            Fisioterapeuta:
+            {{ tratamiento.fisio_nombre }}
+            {{ tratamiento.fisio_apellido }}
+          </span>
+          <span>
+            Estado:
+            {{ tratamiento.estado || 'Pendiente' }}
+          </span>
         </div>
-        <div>
-          <label>Fecha *</label>
-          <input
-            type="date"
-            name="fecha"
-            [(ngModel)]="evolucion.fecha"
-          />
+
+        <div class="form-row">
+          <div>
+            <label>Sesión *</label>
+            <input
+              type="number"
+              min="1"
+              name="numero_sesion"
+              [(ngModel)]="evolucion.numero_sesion"
+            />
+          </div>
+
+          <div>
+            <label>Fecha *</label>
+            <input
+              type="date"
+              name="fecha"
+              [(ngModel)]="evolucion.fecha"
+            />
+          </div>
         </div>
-      </div>
 
-      <label>Procedimientos</label>
-      <textarea
-        rows="3"
-        name="procedimientos"
-        [(ngModel)]="evolucion.procedimientos"
-      ></textarea>
+        <label>Procedimientos</label>
+        <textarea
+          rows="3"
+          name="procedimientos"
+          [(ngModel)]="evolucion.procedimientos"
+          placeholder="Ej: Terapia manual, ejercicios de movilidad, estiramientos..."
+        ></textarea>
 
-      <label>Observaciones</label>
-      <textarea
-        rows="3"
-        name="observaciones"
-        [(ngModel)]="evolucion.observaciones"
-      ></textarea>
+        <label>Observaciones</label>
+        <textarea
+          rows="3"
+          name="observaciones"
+          [(ngModel)]="evolucion.observaciones"
+          placeholder="Ej: Paciente tolera mejor los ejercicios, disminución leve del dolor..."
+        ></textarea>
 
-      <div class="form-row">
-        <div>
-          <label>Dolor</label>
-          <input
-            type="text"
-            name="dolor"
-            [(ngModel)]="evolucion.dolor"
-          />
+        <div class="form-row">
+          <div>
+            <label>Dolor</label>
+            <input
+              type="text"
+              name="dolor"
+              [(ngModel)]="evolucion.dolor"
+              placeholder="Ej: 3/10, leve, moderado..."
+            />
+          </div>
+
+          <div>
+            <label>Movilidad</label>
+            <input
+              type="text"
+              name="movilidad"
+              [(ngModel)]="evolucion.movilidad"
+              placeholder="Ej: Mejorada, limitada, normal..."
+            />
+          </div>
         </div>
-        <div>
-          <label>Movilidad</label>
-          <input
-            type="text"
-            name="movilidad"
-            [(ngModel)]="evolucion.movilidad"
-          />
+
+        <label>Recomendaciones</label>
+        <textarea
+          rows="3"
+          name="recomendaciones"
+          [(ngModel)]="evolucion.recomendaciones"
+          placeholder="Ej: Continuar ejercicios en casa, evitar esfuerzo, aplicar frío..."
+        ></textarea>
+
+        <div class="buttons">
+          <button type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : 'Guardar evolución' }}
+          </button>
+
+          <button
+            type="button"
+            class="secondary"
+            (click)="limpiarFormulario()"
+          >
+            Limpiar
+          </button>
         </div>
-      </div>
-
-      <label>Recomendaciones</label>
-      <textarea
-        rows="3"
-        name="recomendaciones"
-        [(ngModel)]="evolucion.recomendaciones"
-      ></textarea>
-
-      <div class="buttons">
-        <button (click)="guardarEvolucion()">
-          Guardar evolución
-        </button>
-      </div>
+      </form>
     </div>
 
     <div class="table-card">
-      <h2>Historial de evoluciones</h2>
-      <table *ngIf="evoluciones.length > 0; else sinEvoluciones">
-        <thead>
-          <tr>
-            <th>Sesión</th>
-            <th>Fecha</th>
-            <th>Dolor</th>
-            <th>Movilidad</th>
-            <th>Observaciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let e of evoluciones">
-            <td>{{ e.numero_sesion }}</td>
-            <td>{{ e.fecha }}</td>
-            <td>{{ e.dolor }}</td>
-            <td>{{ e.movilidad }}</td>
-            <td>{{ e.observaciones }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-header">
+        <div>
+          <h2>Historial de evoluciones</h2>
+          <p>Total mostrado: {{ evolucionesFiltradas().length }}</p>
+        </div>
 
-      <ng-template #sinEvoluciones>
-        <p class="no-data">No hay evoluciones registradas</p>
-      </ng-template>
+        <button
+          type="button"
+          class="reload-btn"
+          (click)="cargarEvoluciones()"
+          [disabled]="!evolucion.tratamiento_id"
+        >
+          Actualizar
+        </button>
+      </div>
+
+      <div class="filters">
+        <input
+          type="text"
+          placeholder="Buscar por sesión, fecha, dolor, movilidad..."
+          [(ngModel)]="busqueda"
+        />
+      </div>
+
+      <div class="loading" *ngIf="cargandoTratamientos">
+        Cargando tratamientos...
+      </div>
+
+      <div class="loading" *ngIf="cargandoEvoluciones">
+        Cargando evoluciones...
+      </div>
+
+      <div
+        class="empty-select"
+        *ngIf="!evolucion.tratamiento_id && !cargandoTratamientos"
+      >
+        Selecciona un tratamiento para ver su historial de evoluciones.
+      </div>
+
+      <div
+        class="table-container"
+        *ngIf="evolucion.tratamiento_id && !cargandoEvoluciones"
+      >
+        <table *ngIf="evolucionesFiltradas().length > 0; else sinEvoluciones">
+          <thead>
+            <tr>
+              <th>Sesión</th>
+              <th>Fecha</th>
+              <th>Dolor</th>
+              <th>Movilidad</th>
+              <th>Procedimientos</th>
+              <th>Observaciones</th>
+              <th>Recomendaciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let e of evolucionesFiltradas()">
+              <td>
+                <span class="session-badge">
+                  Sesión {{ e.numero_sesion }}
+                </span>
+              </td>
+
+              <td>{{ e.fecha | date:'dd/MM/yyyy' }}</td>
+
+              <td>
+                <span class="data-badge">
+                  {{ e.dolor || 'Sin dato' }}
+                </span>
+              </td>
+
+              <td>
+                <span class="data-badge">
+                  {{ e.movilidad || 'Sin dato' }}
+                </span>
+              </td>
+
+              <td class="text-cell">
+                {{ e.procedimientos || 'Sin procedimientos registrados' }}
+              </td>
+
+              <td class="text-cell">
+                {{ e.observaciones || 'Sin observaciones' }}
+              </td>
+
+              <td class="text-cell">
+                {{ e.recomendaciones || 'Sin recomendaciones' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ng-template #sinEvoluciones>
+          <p class="no-data">
+            No hay evoluciones registradas para este tratamiento.
+          </p>
+        </ng-template>
+      </div>
     </div>
   </section>
 </div>

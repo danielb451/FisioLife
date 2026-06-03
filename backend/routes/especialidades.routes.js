@@ -1,70 +1,130 @@
 const express = require('express');
+const router = express.Router();
 const pool = require('../config/db');
 
-const router = express.Router();
-
+// LISTAR ESPECIALIDADES
 router.get('/', async (req, res) => {
   try {
-    const [especialidades] = await pool.execute(
-      'SELECT * FROM especialidades WHERE activo = 1 ORDER BY id DESC'
-    );
+    const [rows] = await pool.query(`
+      SELECT 
+        id,
+        nombre,
+        descripcion,
+        estado,
+        creado_en
+      FROM especialidades
+      ORDER BY id DESC
+    `);
 
-    res.json(especialidades);
+    res.json(rows);
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al listar especialidades' });
+    console.error('Error al listar especialidades:', error);
+
+    res.status(500).json({
+      mensaje: 'Error al listar especialidades',
+      error: error.message
+    });
   }
 });
 
+// CREAR ESPECIALIDAD
 router.post('/', async (req, res) => {
   try {
-    const { nombre, descripcion } = req.body;
+    const { nombre, descripcion, estado } = req.body;
 
-    if (!nombre) {
-      return res.status(400).json({ mensaje: 'El nombre es obligatorio' });
+    if (!nombre || !nombre.trim()) {
+      return res.status(400).json({
+        mensaje: 'El nombre de la especialidad es obligatorio'
+      });
     }
 
-    const [resultado] = await pool.execute(
-      'INSERT INTO especialidades (nombre, descripcion) VALUES (?, ?)',
-      [nombre, descripcion || null]
+    await pool.query(
+      `
+      INSERT INTO especialidades
+      (nombre, descripcion, estado)
+      VALUES (?, ?, ?)
+      `,
+      [
+        nombre.trim(),
+        descripcion || '',
+        estado ?? 1
+      ]
     );
 
-    res.status(201).json({
-      mensaje: 'Especialidad registrada correctamente',
-      id: resultado.insertId
+    res.json({
+      mensaje: 'Especialidad registrada correctamente'
     });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al registrar especialidad' });
+    console.error('Error al crear especialidad:', error);
+
+    res.status(500).json({
+      mensaje: 'Error al crear especialidad',
+      error: error.message
+    });
   }
 });
 
+// ACTUALIZAR ESPECIALIDAD
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion } = req.body;
+    const { nombre, descripcion, estado } = req.body;
 
-    await pool.execute(
-      'UPDATE especialidades SET nombre = ?, descripcion = ? WHERE id = ?',
-      [nombre, descripcion || null, id]
+    if (!nombre || !nombre.trim()) {
+      return res.status(400).json({
+        mensaje: 'El nombre de la especialidad es obligatorio'
+      });
+    }
+
+    await pool.query(
+      `
+      UPDATE especialidades
+      SET nombre = ?,
+          descripcion = ?,
+          estado = ?
+      WHERE id = ?
+      `,
+      [
+        nombre.trim(),
+        descripcion || '',
+        estado ?? 1,
+        id
+      ]
     );
 
-    res.json({ mensaje: 'Especialidad actualizada correctamente' });
+    res.json({
+      mensaje: 'Especialidad actualizada correctamente'
+    });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al actualizar especialidad' });
+    console.error('Error al actualizar especialidad:', error);
+
+    res.status(500).json({
+      mensaje: 'Error al actualizar especialidad',
+      error: error.message
+    });
   }
 });
 
+// ELIMINAR ESPECIALIDAD
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    await pool.execute(
-      'UPDATE especialidades SET activo = 0 WHERE id = ?',
+    await pool.query(
+      'DELETE FROM especialidades WHERE id = ?',
       [id]
     );
 
-    res.json({ mensaje: 'Especialidad eliminada correctamente' });
+    res.json({
+      mensaje: 'Especialidad eliminada correctamente'
+    });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al eliminar especialidad' });
+    console.error('Error al eliminar especialidad:', error);
+
+    res.status(500).json({
+      mensaje: 'Error al eliminar especialidad',
+      error: error.message
+    });
   }
 });
 

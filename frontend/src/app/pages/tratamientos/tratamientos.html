@@ -1,192 +1,314 @@
 <div class="tratamientos-page">
-<header class="page-header">
-<div>
-<h1>Gestión de Tratamientos</h1>
-<p>Administra tratamientos fisioterapéuticos y seguimiento clínico.</p>
-</div>
-<a routerLink="/dashboard" class="back-link">
- Volver al dashboard
-</a>
-</header>
-<section class="content-grid">
-<div class="form-card">
-<h2>
-8
- {{ editando ? 'Editar tratamiento' : 'Registrar tratamiento' }}
-</h2>
-<div class="alert success" *ngIf="mensaje">
- {{ mensaje }}
-</div>
-<div class="alert error" *ngIf="error">
- {{ error }}
-</div>
-<form (ngSubmit)="guardarTratamiento()">
-<label>Paciente *</label>
-<select
-name="paciente_id"
-[(ngModel)]="tratamiento.paciente_id"
->
-<option [ngValue]="null">
- Seleccione un paciente
-</option>
-<option
-*ngFor="let p of pacientes"
-[ngValue]="p.id"
->
- {{ p.nombre }} {{ p.apellido }}
-</option>
-</select>
-<label>Fisioterapeuta *</label>
-<select
-name="fisioterapeuta_id"
-[(ngModel)]="tratamiento.fisioterapeuta_id"
->
-<option [ngValue]="null">
- Seleccione un fisioterapeuta
-</option>
-<option
-*ngFor="let f of fisioterapeutas"
-[ngValue]="f.id"
->
- {{ f.nombre }} {{ f.apellido }}
-</option>
-</select>
-<label>Diagnóstico *</label>
-9
-<textarea
-rows="4"
-name="diagnostico"
-[(ngModel)]="tratamiento.diagnostico"
-></textarea>
-<label>Objetivo terapéutico</label>
-<textarea
-rows="3"
-name="objetivo"
-[(ngModel)]="tratamiento.objetivo"
-></textarea>
-<label>Plan de tratamiento</label>
-<textarea
-rows="4"
-name="plan_tratamiento"
-[(ngModel)]="tratamiento.plan_tratamiento"
-></textarea>
-<div class="form-row">
-<div>
-<label>Sesiones totales</label>
-<input
-type="number"
-name="sesiones_totales"
-[(ngModel)]="tratamiento.sesiones_totales"
->
-</div>
-<div>
-<label>Estado</label>
-<select
-name="estado"
-[(ngModel)]="tratamiento.estado"
->
-<option value="Pendiente">Pendiente</option>
-<option value="En tratamiento">En tratamiento</option>
-<option value="Finalizado">Finalizado</option>
-<option value="Suspendido">Suspendido</option>
-</select>
-</div>
-</div>
-<div class="form-row">
-10
-<div>
-<label>Fecha inicio</label>
-<input
-type="date"
-name="fecha_inicio"
-[(ngModel)]="tratamiento.fecha_inicio"
->
-</div>
-<div>
-<label>Fecha fin</label>
-<input
-type="date"
-name="fecha_fin"
-[(ngModel)]="tratamiento.fecha_fin"
->
-</div>
-</div>
-<div class="buttons">
-<button type="submit">
- {{ editando ? 'Actualizar' : 'Guardar' }}
-</button>
-<button
-type="button"
-class="secondary"
-(click)="limpiarFormulario()"
-*ngIf="editando"
->
- Cancelar
-</button>
-</div>
-</form>
-</div>
-<div class="table-card">
-<div class="table-header">
-<div>
-<h2>Lista de tratamientos</h2>
-<p>Total: {{ tratamientosFiltrados.length }}</p>
-11
-</div>
-<input
-type="text"
-placeholder="Buscar tratamiento..."
-[(ngModel)]="busqueda"
-(input)="buscarTratamiento()"
->
-</div>
-<table>
-<thead>
-<tr>
-<th>Paciente</th>
-<th>Fisioterapeuta</th>
-<th>Sesiones</th>
-<th>Estado</th>
-<th>Acciones</th>
-</tr>
-</thead>
-<tbody>
-<tr *ngFor="let t of tratamientosFiltrados">
-<td>
-<strong>
- {{ t.paciente_nombre }}
- {{ t.paciente_apellido }}
-</strong>
-</td>
-<td>
- {{ t.fisio_nombre }}
- {{ t.fisio_apellido }}
-</td>
-<td>
- {{ t.sesiones_realizadas || 0 }} /
- {{ t.sesiones_totales || 0 }}
-</td>
-<td>
- {{ t.estado }}
-</td>
-12
-<td class="actions">
-<button
-class="edit"
-(click)="editarTratamiento(t)"
->
- Editar
-</button>
-<button
-class="delete"
-(click)="eliminarTratamiento(t.id)"
->
- Eliminar
-</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
+  <header class="page-header">
+    <div>
+      <span class="page-label">Seguimiento clínico</span>
+      <h1>Gestión de Tratamientos</h1>
+      <p>Administra tratamientos fisioterapéuticos, objetivos terapéuticos y seguimiento de sesiones.</p>
+    </div>
+
+    <a routerLink="/dashboard" class="back-link">
+      Volver al dashboard
+    </a>
+  </header>
+
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="stat-icon">📋</span>
+      <div>
+        <h3>{{ tratamientos.length }}</h3>
+        <p>Total tratamientos</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">🕘</span>
+      <div>
+        <h3>{{ totalPendientes() }}</h3>
+        <p>Pendientes</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">💪</span>
+      <div>
+        <h3>{{ totalEnTratamiento() }}</h3>
+        <p>En tratamiento</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">✅</span>
+      <div>
+        <h3>{{ totalFinalizados() }}</h3>
+        <p>Finalizados</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="content-grid">
+    <div class="form-card">
+      <div class="card-title">
+        <div>
+          <h2>{{ editando ? 'Editar tratamiento' : 'Registrar tratamiento' }}</h2>
+          <p>
+            {{ editando ? 'Actualiza el tratamiento seleccionado.' : 'Completa los datos para iniciar un seguimiento clínico.' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="alert success" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+
+      <div class="alert error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <form (ngSubmit)="guardarTratamiento()">
+        <label>Paciente *</label>
+        <select
+          name="paciente_id"
+          [(ngModel)]="tratamiento.paciente_id"
+        >
+          <option [ngValue]="null">Seleccione un paciente</option>
+          <option
+            *ngFor="let p of pacientes"
+            [ngValue]="p.id"
+          >
+            {{ p.nombre }} {{ p.apellido }} - CI: {{ p.ci || 'Sin CI' }}
+          </option>
+        </select>
+
+        <label>Fisioterapeuta *</label>
+        <select
+          name="fisioterapeuta_id"
+          [(ngModel)]="tratamiento.fisioterapeuta_id"
+        >
+          <option [ngValue]="null">Seleccione un fisioterapeuta</option>
+          <option
+            *ngFor="let f of fisioterapeutas"
+            [ngValue]="f.id"
+          >
+            {{ f.nombre }} {{ f.apellido }} - {{ f.especialidad || 'Sin especialidad' }}
+          </option>
+        </select>
+
+        <label>Diagnóstico *</label>
+        <textarea
+          rows="4"
+          name="diagnostico"
+          [(ngModel)]="tratamiento.diagnostico"
+          placeholder="Ej: Dolor lumbar crónico, lesión muscular, recuperación postoperatoria..."
+        ></textarea>
+
+        <label>Objetivo terapéutico</label>
+        <textarea
+          rows="3"
+          name="objetivo"
+          [(ngModel)]="tratamiento.objetivo"
+          placeholder="Ej: Disminuir dolor, recuperar movilidad, fortalecer zona afectada..."
+        ></textarea>
+
+        <label>Plan de tratamiento</label>
+        <textarea
+          rows="4"
+          name="plan_tratamiento"
+          [(ngModel)]="tratamiento.plan_tratamiento"
+          placeholder="Ej: Terapia manual, ejercicios progresivos, electroterapia..."
+        ></textarea>
+
+        <div class="form-row">
+          <div>
+            <label>Sesiones totales</label>
+            <input
+              type="number"
+              min="0"
+              name="sesiones_totales"
+              [(ngModel)]="tratamiento.sesiones_totales"
+            />
+          </div>
+
+          <div>
+            <label>Sesiones realizadas</label>
+            <input
+              type="number"
+              min="0"
+              name="sesiones_realizadas"
+              [(ngModel)]="tratamiento.sesiones_realizadas"
+            />
+          </div>
+        </div>
+
+        <label>Estado</label>
+        <select
+          name="estado"
+          [(ngModel)]="tratamiento.estado"
+        >
+          <option value="Pendiente">Pendiente</option>
+          <option value="En tratamiento">En tratamiento</option>
+          <option value="Finalizado">Finalizado</option>
+          <option value="Suspendido">Suspendido</option>
+        </select>
+
+        <div class="form-row">
+          <div>
+            <label>Fecha inicio</label>
+            <input
+              type="date"
+              name="fecha_inicio"
+              [(ngModel)]="tratamiento.fecha_inicio"
+            />
+          </div>
+
+          <div>
+            <label>Fecha fin</label>
+            <input
+              type="date"
+              name="fecha_fin"
+              [(ngModel)]="tratamiento.fecha_fin"
+            />
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : (editando ? 'Actualizar tratamiento' : 'Guardar tratamiento') }}
+          </button>
+
+          <button
+            type="button"
+            class="secondary"
+            (click)="limpiarFormulario()"
+            *ngIf="editando"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div>
+          <h2>Lista de tratamientos</h2>
+          <p>Total mostrado: {{ tratamientosFiltrados.length }}</p>
+        </div>
+
+        <button type="button" class="reload-btn" (click)="cargarTratamientos()">
+          Actualizar
+        </button>
+      </div>
+
+      <div class="filters">
+        <input
+          type="text"
+          placeholder="Buscar por paciente, fisioterapeuta, diagnóstico..."
+          [(ngModel)]="busqueda"
+          (input)="buscarTratamiento()"
+        />
+
+        <select
+          name="filtroEstado"
+          [(ngModel)]="filtroEstado"
+          (change)="buscarTratamiento()"
+        >
+          <option value="Todos">Todos los estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En tratamiento">En tratamiento</option>
+          <option value="Finalizado">Finalizado</option>
+          <option value="Suspendido">Suspendido</option>
+        </select>
+      </div>
+
+      <div class="loading" *ngIf="cargando">
+        Cargando tratamientos...
+      </div>
+
+      <div class="table-container" *ngIf="!cargando">
+        <table>
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>Fisioterapeuta</th>
+              <th>Diagnóstico</th>
+              <th>Sesiones</th>
+              <th>Progreso</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let t of tratamientosFiltrados">
+              <td class="person-cell">
+                <strong>{{ t.paciente_nombre }} {{ t.paciente_apellido }}</strong>
+                <small>Paciente asignado</small>
+              </td>
+
+              <td class="person-cell">
+                <strong>{{ t.fisio_nombre }} {{ t.fisio_apellido }}</strong>
+                <small>Fisioterapeuta responsable</small>
+              </td>
+
+              <td class="diagnostico-cell">
+                {{ t.diagnostico || 'Sin diagnóstico registrado' }}
+              </td>
+
+              <td>
+                {{ t.sesiones_realizadas || 0 }} /
+                {{ t.sesiones_totales || 0 }}
+              </td>
+
+              <td>
+                <div class="progress-wrapper">
+                  <div class="progress-text">
+                    {{ calcularProgreso(t) }}%
+                  </div>
+
+                  <div class="progress-bar">
+                    <div
+                      class="progress-fill"
+                      [style.width.%]="calcularProgreso(t)"
+                    ></div>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <span class="estado" [ngClass]="obtenerClaseEstado(t.estado)">
+                  {{ t.estado || 'Pendiente' }}
+                </span>
+              </td>
+
+              <td>
+                <div class="actions">
+                  <button
+                    type="button"
+                    class="edit"
+                    (click)="editarTratamiento(t)"
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="delete"
+                    (click)="eliminarTratamiento(t.id)"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="tratamientosFiltrados.length === 0">
+              <td colspan="7" class="empty">
+                No hay tratamientos registrados con esos filtros.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 </div>

@@ -1,97 +1,126 @@
 const express = require('express');
+const router = express.Router();
 const pool = require('../config/db');
 
-const router = express.Router();
-
-// LISTAR POR TRATAMIENTO
-router.get('/tratamiento/:id', async (req, res) => {
-
+// LISTAR EVOLUCIONES POR TRATAMIENTO
+router.get('/:tratamiento_id', async (req, res) => {
   try {
+    const { tratamiento_id } = req.params;
 
-    const { id } = req.params;
-
-    const [evoluciones] = await pool.execute(`
-      SELECT *
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        id,
+        tratamiento_id,
+        numero_sesion,
+        fecha,
+        procedimientos,
+        observaciones,
+        dolor,
+        movilidad,
+        recomendaciones,
+        creado_en
       FROM evoluciones
       WHERE tratamiento_id = ?
-      ORDER BY numero_sesion ASC
-    `, [id]);
+      AND activo = 1
+      ORDER BY numero_sesion ASC, fecha ASC
+      `,
+      [tratamiento_id]
+    );
 
-    res.json(evoluciones);
-
+    res.json(rows);
   } catch (error) {
-
-    console.error(error);
+    console.error('Error al listar evoluciones:', error);
 
     res.status(500).json({
-      mensaje: 'Error al listar evoluciones'
+      mensaje: 'Error al listar evoluciones',
+      error: error.message
     });
-
   }
-
 });
 
 // CREAR EVOLUCIÓN
 router.post('/', async (req, res) => {
-
   try {
-
     const {
       tratamiento_id,
       numero_sesion,
       fecha,
-      observaciones,
       procedimientos,
+      observaciones,
       dolor,
       movilidad,
       recomendaciones
     } = req.body;
 
-    const [resultado] = await pool.execute(`
+    if (!tratamiento_id || !numero_sesion || !fecha) {
+      return res.status(400).json({
+        mensaje: 'Tratamiento, número de sesión y fecha son obligatorios'
+      });
+    }
+
+    await pool.query(
+      `
       INSERT INTO evoluciones
       (
         tratamiento_id,
         numero_sesion,
         fecha,
-        observaciones,
         procedimientos,
+        observaciones,
         dolor,
         movilidad,
-        recomendaciones
+        recomendaciones,
+        activo
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      tratamiento_id,
-      numero_sesion,
-      fecha,
-      observaciones,
-      procedimientos,
-      dolor,
-      movilidad,
-      recomendaciones
-    ]);
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+      `,
+      [
+        tratamiento_id,
+        numero_sesion,
+        fecha,
+        procedimientos || '',
+        observaciones || '',
+        dolor || '',
+        movilidad || '',
+        recomendaciones || ''
+      ]
+    );
 
-    await pool.execute(`
-      UPDATE tratamientos
-      SET sesiones_realizadas = sesiones_realizadas + 1
-      WHERE id = ?
-    `, [tratamiento_id]);
-
-    res.status(201).json({
-      mensaje: 'Evolución registrada',
-      id: resultado.insertId
+    res.json({
+      mensaje: 'Evolución registrada correctamente'
     });
-
   } catch (error) {
-
-    console.error(error);
+    console.error('Error al crear evolución:', error);
 
     res.status(500).json({
-      mensaje: 'Error al registrar evolución'
+      mensaje: 'Error al registrar evolución',
+      error: error.message
     });
-
   }
+});
 
+// ELIMINAR EVOLUCIÓN LÓGICAMENTE
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await pool.query(
+      'UPDATE evoluciones SET activo = 0 WHERE id = ?',
+      [id]
+    );
+
+    res.json({
+      mensaje: 'Evolución eliminada correctamente'
+    });
+  } catch (error) {
+    console.error('Error al eliminar evolución:', error);
+
+    res.status(500).json({
+      mensaje: 'Error al eliminar evolución',
+      error: error.message
+    });
+  }
 });
 
 module.exports = router;

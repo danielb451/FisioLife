@@ -1,65 +1,204 @@
-<div class="page-container">
-  <h1>Especialidades</h1>
-
-  <form class="form-card" (ngSubmit)="guardarEspecialidad()">
-    <input
-      type="text"
-      placeholder="Nombre de la especialidad"
-      [(ngModel)]="nuevaEspecialidad.nombre"
-      name="nombre"
-    />
-
-    <textarea
-      placeholder="Descripción"
-      [(ngModel)]="nuevaEspecialidad.descripcion"
-      name="descripcion"
-    ></textarea>
-
-    <div class="buttons">
-      <button type="submit">
-        {{ editando ? 'Actualizar' : 'Guardar' }}
-      </button>
-
-      <button type="button" *ngIf="editando" (click)="cancelarEdicion()">
-        Cancelar
-      </button>
+<div class="especialidades-page">
+  <header class="page-header">
+    <div>
+      <span class="page-label">Áreas clínicas</span>
+      <h1>Gestión de Especialidades</h1>
+      <p>Administra las áreas de atención fisioterapéutica de la clínica.</p>
     </div>
-  </form>
 
-  <p *ngIf="cargando">Cargando especialidades...</p>
-  <p *ngIf="error" class="error">{{ error }}</p>
+    <a routerLink="/dashboard" class="back-link">
+      Volver al dashboard
+    </a>
+  </header>
 
-  <table *ngIf="!cargando && especialidades.length > 0">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Especialidad</th>
-        <th>Descripción</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="stat-icon">🏥</span>
+      <div>
+        <h3>{{ especialidades.length }}</h3>
+        <p>Total especialidades</p>
+      </div>
+    </article>
 
-    <tbody>
-      <tr *ngFor="let especialidad of especialidades">
-        <td>{{ especialidad.id }}</td>
-        <td>{{ especialidad.nombre }}</td>
-        <td>{{ especialidad.descripcion }}</td>
-        <td>{{ especialidad.estado === 1 ? 'Activo' : 'Inactivo' }}</td>
-        <td>
-          <button type="button" (click)="editarEspecialidad(especialidad)">
-            Editar
+    <article class="stat-card">
+      <span class="stat-icon">✅</span>
+      <div>
+        <h3>{{ totalActivas() }}</h3>
+        <p>Activas</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">⛔</span>
+      <div>
+        <h3>{{ totalInactivas() }}</h3>
+        <p>Inactivas</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">🔎</span>
+      <div>
+        <h3>{{ especialidadesFiltradas.length }}</h3>
+        <p>Mostradas</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="content-grid">
+    <div class="form-card">
+      <div class="card-title">
+        <div>
+          <h2>{{ editando ? 'Editar especialidad' : 'Registrar especialidad' }}</h2>
+          <p>
+            {{ editando ? 'Actualiza los datos de la especialidad seleccionada.' : 'Completa los datos para registrar una nueva especialidad.' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="alert success" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+
+      <div class="alert error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <form (ngSubmit)="guardarEspecialidad()">
+        <label>Nombre de la especialidad *</label>
+        <input
+          type="text"
+          placeholder="Ej: Fisioterapia deportiva"
+          [(ngModel)]="nuevaEspecialidad.nombre"
+          name="nombre"
+        />
+
+        <label>Descripción</label>
+        <textarea
+          placeholder="Describe brevemente el área de atención..."
+          [(ngModel)]="nuevaEspecialidad.descripcion"
+          name="descripcion"
+          rows="4"
+        ></textarea>
+
+        <label>Estado</label>
+        <select
+          name="estado"
+          [(ngModel)]="nuevaEspecialidad.estado"
+        >
+          <option [ngValue]="1">Activo</option>
+          <option [ngValue]="0">Inactivo</option>
+        </select>
+
+        <div class="buttons">
+          <button type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : (editando ? 'Actualizar especialidad' : 'Guardar especialidad') }}
           </button>
 
-          <button type="button" (click)="eliminarEspecialidad(especialidad.id)">
-            Eliminar
+          <button
+            type="button"
+            class="secondary"
+            *ngIf="editando"
+            (click)="cancelarEdicion()"
+          >
+            Cancelar
           </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        </div>
+      </form>
+    </div>
 
-  <p *ngIf="!cargando && especialidades.length === 0">
-    No hay especialidades registradas.
-  </p>
+    <div class="table-card">
+      <div class="table-header">
+        <div>
+          <h2>Lista de especialidades</h2>
+          <p>Total mostrado: {{ especialidadesFiltradas.length }}</p>
+        </div>
+
+        <button
+          type="button"
+          class="reload-btn"
+          (click)="cargarEspecialidades()"
+        >
+          Actualizar
+        </button>
+      </div>
+
+      <div class="filters">
+        <input
+          type="text"
+          placeholder="Buscar por nombre, descripción o estado..."
+          [(ngModel)]="busqueda"
+          (input)="buscarEspecialidad()"
+        />
+      </div>
+
+      <div class="loading" *ngIf="cargando">
+        Cargando especialidades...
+      </div>
+
+      <div class="table-container" *ngIf="!cargando">
+        <table *ngIf="especialidadesFiltradas.length > 0; else sinEspecialidades">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Especialidad</th>
+              <th>Descripción</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let especialidad of especialidadesFiltradas">
+              <td>{{ especialidad.id }}</td>
+
+              <td class="especialidad-cell">
+                <strong>{{ especialidad.nombre }}</strong>
+                <small>Área de atención</small>
+              </td>
+
+              <td class="descripcion-cell">
+                {{ especialidad.descripcion || 'Sin descripción registrada' }}
+              </td>
+
+              <td>
+                <span
+                  class="estado"
+                  [ngClass]="obtenerClaseEstado(especialidad.estado)"
+                >
+                  {{ obtenerTextoEstado(especialidad.estado) }}
+                </span>
+              </td>
+
+              <td>
+                <div class="actions">
+                  <button
+                    type="button"
+                    class="edit"
+                    (click)="editarEspecialidad(especialidad)"
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="delete"
+                    (click)="eliminarEspecialidad(especialidad.id)"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ng-template #sinEspecialidades>
+          <p class="empty">
+            No hay especialidades registradas con esos filtros.
+          </p>
+        </ng-template>
+      </div>
+    </div>
+  </section>
 </div>
