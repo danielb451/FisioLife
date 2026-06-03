@@ -1,18 +1,60 @@
 <div class="pacientes-page">
-
   <header class="page-header">
     <div>
+      <span class="page-label">Registro clínico</span>
       <h1>Gestión de Pacientes</h1>
-      <p>Administra los datos principales de los pacientes de la clínica.</p>
+      <p>Administra los datos personales, contacto y motivo de consulta de los pacientes.</p>
     </div>
 
-    <a href="/dashboard" class="back-link">Volver al dashboard</a>
+    <a routerLink="/dashboard" class="back-link">
+      Volver al dashboard
+    </a>
   </header>
 
-  <section class="content-grid">
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="stat-icon">👥</span>
+      <div>
+        <h3>{{ pacientes.length }}</h3>
+        <p>Total de pacientes</p>
+      </div>
+    </article>
 
+    <article class="stat-card">
+      <span class="stat-icon">📞</span>
+      <div>
+        <h3>{{ totalConTelefono() }}</h3>
+        <p>Con teléfono</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">✉️</span>
+      <div>
+        <h3>{{ totalConEmail() }}</h3>
+        <p>Con email</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">🔎</span>
+      <div>
+        <h3>{{ pacientesFiltrados.length }}</h3>
+        <p>Mostrados</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="content-grid">
     <div class="form-card">
-      <h2>{{ editando ? 'Editar paciente' : 'Registrar paciente' }}</h2>
+      <div class="card-title">
+        <div>
+          <h2>{{ editando ? 'Editar paciente' : 'Registrar paciente' }}</h2>
+          <p>
+            {{ editando ? 'Actualiza los datos del paciente seleccionado.' : 'Completa los datos para crear un nuevo registro.' }}
+          </p>
+        </div>
+      </div>
 
       <div class="alert success" *ngIf="mensaje">
         {{ mensaje }}
@@ -23,41 +65,74 @@
       </div>
 
       <form (ngSubmit)="guardarPaciente()">
-
         <div class="form-row">
           <div>
             <label>Nombre *</label>
-            <input type="text" name="nombre" [(ngModel)]="paciente.nombre">
+            <input
+              type="text"
+              name="nombre"
+              [(ngModel)]="paciente.nombre"
+              placeholder="Ej: Roberto"
+            />
           </div>
 
           <div>
             <label>Apellido *</label>
-            <input type="text" name="apellido" [(ngModel)]="paciente.apellido">
+            <input
+              type="text"
+              name="apellido"
+              [(ngModel)]="paciente.apellido"
+              placeholder="Ej: Tito"
+            />
           </div>
         </div>
 
         <div class="form-row">
           <div>
             <label>CI</label>
-            <input type="text" name="ci" [(ngModel)]="paciente.ci">
+            <input
+              type="text"
+              name="ci"
+              [(ngModel)]="paciente.ci"
+              placeholder="Ej: 1234567"
+            />
           </div>
 
           <div>
             <label>Teléfono</label>
-            <input type="text" name="telefono" [(ngModel)]="paciente.telefono">
+            <input
+              type="text"
+              name="telefono"
+              [(ngModel)]="paciente.telefono"
+              placeholder="Ej: 79729710"
+            />
           </div>
         </div>
 
         <label>Email</label>
-        <input type="email" name="email" [(ngModel)]="paciente.email">
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="paciente.email"
+          placeholder="Ej: paciente@gmail.com"
+        />
 
         <label>Dirección</label>
-        <input type="text" name="direccion" [(ngModel)]="paciente.direccion">
+        <input
+          type="text"
+          name="direccion"
+          [(ngModel)]="paciente.direccion"
+          placeholder="Ej: Cochabamba - Cercado"
+        />
 
         <div class="form-row">
           <div>
             <label>Fecha de nacimiento</label>
-            <input type="date" name="fecha_nacimiento" [(ngModel)]="paciente.fecha_nacimiento">
+            <input
+              type="date"
+              name="fecha_nacimiento"
+              [(ngModel)]="paciente.fecha_nacimiento"
+            />
           </div>
 
           <div>
@@ -71,72 +146,108 @@
         </div>
 
         <label>Motivo de consulta</label>
-        <textarea 
+        <textarea
           name="motivo_consulta"
           rows="4"
-          [(ngModel)]="paciente.motivo_consulta">
-        </textarea>
+          [(ngModel)]="paciente.motivo_consulta"
+          placeholder="Ej: Dolor lumbar, lesión de rodilla, control postoperatorio..."
+        ></textarea>
 
         <div class="buttons">
-          <button type="submit">
-            {{ editando ? 'Actualizar paciente' : 'Guardar paciente' }}
+          <button type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : (editando ? 'Actualizar paciente' : 'Guardar paciente') }}
           </button>
 
-          <button type="button" class="secondary" (click)="limpiarFormulario()" *ngIf="editando">
+          <button
+            type="button"
+            class="secondary"
+            (click)="limpiarFormulario()"
+            *ngIf="editando"
+          >
             Cancelar
           </button>
         </div>
-
       </form>
     </div>
 
     <div class="table-card">
       <div class="table-header">
-        <h2>Lista de pacientes</h2>
+        <div>
+          <h2>Lista de pacientes</h2>
+          <p>Total mostrado: {{ pacientesFiltrados.length }}</p>
+        </div>
 
-        <input 
-          type="text"
-          placeholder="Buscar paciente..."
-          [(ngModel)]="busqueda"
-          (input)="buscarPaciente()"
-        >
+        <button type="button" class="reload-btn" (click)="cargarPacientes()">
+          Actualizar
+        </button>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Paciente</th>
-            <th>CI</th>
-            <th>Teléfono</th>
-            <th>Género</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
+      <div class="filters">
+        <input
+          type="text"
+          placeholder="Buscar por nombre, apellido, CI, teléfono, email..."
+          [(ngModel)]="busqueda"
+          (input)="buscarPaciente()"
+        />
+      </div>
 
-        <tbody>
-          <tr *ngFor="let p of pacientesFiltrados">
-            <td>
-              <strong>{{ p.nombre }} {{ p.apellido }}</strong>
-              <small>{{ p.email || 'Sin email' }}</small>
-            </td>
-            <td>{{ p.ci || '-' }}</td>
-            <td>{{ p.telefono || '-' }}</td>
-            <td>{{ p.genero }}</td>
-            <td class="actions">
-              <button class="edit" (click)="editarPaciente(p)">Editar</button>
-              <button class="delete" (click)="eliminarPaciente(p.id)">Eliminar</button>
-            </td>
-          </tr>
+      <div class="loading" *ngIf="cargando">
+        Cargando pacientes...
+      </div>
 
-          <tr *ngIf="pacientesFiltrados.length === 0">
-            <td colspan="5" class="empty">
-              No hay pacientes registrados.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-container" *ngIf="!cargando">
+        <table>
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>CI</th>
+              <th>Teléfono</th>
+              <th>Género</th>
+              <th>Motivo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let p of pacientesFiltrados">
+              <td class="patient-cell">
+                <strong>{{ p.nombre }} {{ p.apellido }}</strong>
+                <small>{{ p.email || 'Sin email' }}</small>
+                <small>{{ p.direccion || 'Sin dirección' }}</small>
+              </td>
+
+              <td>{{ p.ci || '-' }}</td>
+              <td>{{ p.telefono || '-' }}</td>
+              <td>
+                <span class="genero-badge">
+                  {{ p.genero || 'Otro' }}
+                </span>
+              </td>
+              <td class="motivo-cell">
+                {{ p.motivo_consulta || 'Sin motivo registrado' }}
+              </td>
+
+              <td>
+                <div class="actions">
+                  <button type="button" class="edit" (click)="editarPaciente(p)">
+                    Editar
+                  </button>
+
+                  <button type="button" class="delete" (click)="eliminarPaciente(p.id)">
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="pacientesFiltrados.length === 0">
+              <td colspan="6" class="empty">
+                No hay pacientes registrados con esos filtros.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-
   </section>
-
 </div>

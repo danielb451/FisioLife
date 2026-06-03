@@ -6,30 +6,35 @@ export interface Especialidad {
   id?: number;
   nombre: string;
   descripcion?: string;
+  estado?: number;
+  creado_en?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class EspecialidadesService {
-
   private apiUrl = 'http://localhost:3000/api/especialidades';
 
   constructor(private http: HttpClient) {}
 
-  listar(): Observable<Especialidad[]> {
+  obtenerEspecialidades(): Observable<Especialidad[]> {
     return this.http.get<Especialidad[]>(this.apiUrl);
   }
 
-  crear(especialidad: Especialidad): Observable<any> {
+  obtenerEspecialidadPorId(id: number): Observable<Especialidad> {
+    return this.http.get<Especialidad>(`${this.apiUrl}/${id}`);
+  }
+
+  crearEspecialidad(especialidad: Especialidad): Observable<any> {
     return this.http.post(this.apiUrl, especialidad);
   }
 
-  actualizar(id: number, especialidad: Especialidad): Observable<any> {
+  actualizarEspecialidad(id: number, especialidad: Especialidad): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, especialidad);
   }
 
-  eliminar(id: number): Observable<any> {
+  eliminarEspecialidad(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 }

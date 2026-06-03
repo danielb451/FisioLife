@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login';
 import { DashboardComponent } from './pages/dashboard/dashboard';
-import { authGuard } from './guards/auth-guard';
 import { PacientesComponent } from './pages/pacientes/pacientes';
 import { CitasComponent } from './pages/citas/citas';
 import { FisioterapeutasComponent } from './pages/fisioterapeutas/fisioterapeutas';
 import { TratamientosComponent } from './pages/tratamientos/tratamientos';
 import { EvolucionesComponent } from './pages/evoluciones/evoluciones';
 import { EspecialidadesComponent } from './pages/especialidades/especialidades';
+import { authGuard } from './guards/auth-guard';
 
 export const routes: Routes = [
   {
@@ -25,10 +25,6 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: '**',
-    redirectTo: 'login'
-  },
-  {
     path: 'pacientes',
     component: PacientesComponent,
     canActivate: [authGuard]
@@ -40,15 +36,14 @@ export const routes: Routes = [
   },
   {
     path: 'fisioterapeutas',
-      component: FisioterapeutasComponent,
-      canActivate: [authGuard]
-    },
-    {
+    component: FisioterapeutasComponent,
+    canActivate: [authGuard]
+  },
+  {
     path: 'tratamientos',
     component: TratamientosComponent,
     canActivate: [authGuard]
   },
-
   {
     path: 'evoluciones',
     component: EvolucionesComponent,
@@ -59,4 +54,8 @@ export const routes: Routes = [
     component: EspecialidadesComponent,
     canActivate: [authGuard]
   },
+  {
+    path: '**',
+    redirectTo: 'login'
+  }
 ];

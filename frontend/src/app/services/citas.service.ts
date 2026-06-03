@@ -21,17 +21,12 @@ export interface Cita {
   providedIn: 'root'
 })
 export class CitasService {
-
   private apiUrl = 'http://localhost:3000/api/citas';
 
   constructor(private http: HttpClient) {}
 
   listar(): Observable<Cita[]> {
     return this.http.get<Cita[]>(this.apiUrl);
-  }
-
-  obtenerPorId(id: number): Observable<Cita> {
-    return this.http.get<Cita>(`${this.apiUrl}/${id}`);
   }
 
   crear(cita: Cita): Observable<any> {

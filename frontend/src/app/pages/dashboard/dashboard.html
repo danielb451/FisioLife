@@ -1,82 +1,203 @@
 <div class="dashboard-layout">
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="logo">FL</div>
+      <div class="brand-logo">FL</div>
+
       <div>
         <h2>FisioLife</h2>
         <span>Sistema clínico</span>
       </div>
     </div>
 
-    <nav>
-      <a class="active">Dashboard</a>
-      <a routerLink="/pacientes">Pacientes</a>
-      <a>Citas</a>
-      <a>Tratamientos</a>
-      <a>Fisioterapeutas</a>
-      <a>Reportes</a>
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active">
+        <span>🏠</span>
+        Dashboard
+      </a>
+
+      <a routerLink="/pacientes" routerLinkActive="active">
+        <span>👥</span>
+        Pacientes
+      </a>
+
+      <a routerLink="/citas" routerLinkActive="active">
+        <span>📅</span>
+        Citas
+      </a>
+
+      <a routerLink="/fisioterapeutas" routerLinkActive="active">
+        <span>🧑‍⚕️</span>
+        Fisioterapeutas
+      </a>
+
+      <a routerLink="/tratamientos" routerLinkActive="active">
+        <span>💪</span>
+        Tratamientos
+      </a>
+
+      <a routerLink="/evoluciones" routerLinkActive="active">
+        <span>📈</span>
+        Evoluciones
+      </a>
+
+      <a routerLink="/especialidades" routerLinkActive="active">
+        <span>🏥</span>
+        Especialidades
+      </a>
     </nav>
+
+    <div class="sidebar-footer">
+      <p>Sesión activa</p>
+      <strong>{{ usuario?.rol || 'Usuario' }}</strong>
+    </div>
   </aside>
 
   <main class="main-content">
     <header class="topbar">
       <div>
+        <span class="welcome-label">Bienvenido nuevamente</span>
         <h1>Panel Administrativo</h1>
-        <p>Bienvenido, {{ usuario?.nombre }} · Rol: {{ usuario?.rol }}</p>
+        <p>
+          {{ usuario?.nombre || 'Usuario' }} ·
+          {{ fechaActual | date:'dd/MM/yyyy' }}
+        </p>
       </div>
 
-      <button (click)="cerrarSesion()">Cerrar sesión</button>
+      <div class="topbar-actions">
+        <button class="refresh-btn" type="button" (click)="cargarDashboard()">
+          Actualizar
+        </button>
+
+        <button class="logout-btn" type="button" (click)="cerrarSesion()">
+          Cerrar sesión
+        </button>
+      </div>
     </header>
 
-    <section class="cards">
-      <article class="card">
-        <h3>Pacientes</h3>
-        <strong>0</strong>
-        <p>Pacientes registrados</p>
-      </article>
-
-      <article class="card">
-        <h3>Citas de hoy</h3>
-        <strong>0</strong>
-        <p>Sesiones programadas</p>
-      </article>
-
-      <article class="card">
-        <h3>Tratamientos</h3>
-        <strong>0</strong>
-        <p>Tratamientos activos</p>
-      </article>
-
-      <article class="card">
-        <h3>Usuarios</h3>
-        <strong>1</strong>
-        <p>Personal autorizado</p>
-      </article>
+    <section class="status-section" *ngIf="cargando">
+      <div class="loading-card">
+        <div class="spinner"></div>
+        <p>Cargando información del sistema...</p>
+      </div>
     </section>
 
-    <section class="panel-grid">
-      <article class="panel">
-        <h2>Módulos principales</h2>
-        <div class="module-list">
-          <div>
-            <strong>Pacientes</strong>
-            <span>Registro, datos personales e historial.</span>
-          </div>
-          <div>
-            <strong>Citas</strong>
-            <span>Agenda de sesiones fisioterapéuticas.</span>
-          </div>
-          <div>
-            <strong>Tratamientos</strong>
-            <span>Seguimiento de terapias y evolución.</span>
-          </div>
+    <section class="status-section" *ngIf="error && !cargando">
+      <div class="error-card">
+        <strong>Error</strong>
+        <p>{{ error }}</p>
+        <button type="button" (click)="cargarDashboard()">Intentar nuevamente</button>
+      </div>
+    </section>
+
+    <section class="summary-cards" *ngIf="!cargando && !error">
+      <article class="summary-card">
+        <div class="card-icon patients">👥</div>
+
+        <div>
+          <h3>Pacientes</h3>
+          <strong>{{ datos.pacientes }}</strong>
+          <p>Pacientes registrados</p>
         </div>
       </article>
 
-      <article class="panel highlight">
-        <h2>Estado del sistema</h2>
-        <p>Backend conectado con MySQL y autenticación JWT lista para ampliar el proyecto.</p>
+      <article class="summary-card">
+        <div class="card-icon appointments">📅</div>
+
+        <div>
+          <h3>Citas de hoy</h3>
+          <strong>{{ datos.citasHoy }}</strong>
+          <p>Sesiones programadas</p>
+        </div>
       </article>
+
+      <article class="summary-card">
+        <div class="card-icon treatments">💪</div>
+
+        <div>
+          <h3>Tratamientos</h3>
+          <strong>{{ datos.tratamientos }}</strong>
+          <p>Tratamientos activos</p>
+        </div>
+      </article>
+
+      <article class="summary-card">
+        <div class="card-icon users">🔐</div>
+
+        <div>
+          <h3>Usuarios</h3>
+          <strong>{{ datos.usuarios }}</strong>
+          <p>Personal autorizado</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel modules-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Módulos principales</h2>
+            <p>Accede rápidamente a las funciones del sistema.</p>
+          </div>
+        </div>
+
+        <div class="module-grid">
+          <a
+            class="module-card"
+            *ngFor="let modulo of modulos"
+            [routerLink]="modulo.ruta"
+          >
+            <div class="module-icon">{{ modulo.icono }}</div>
+
+            <div>
+              <strong>{{ modulo.titulo }}</strong>
+              <span>{{ modulo.descripcion }}</span>
+            </div>
+          </a>
+        </div>
+      </article>
+
+      <aside class="right-column">
+        <article class="panel system-card">
+          <h2>Estado del sistema</h2>
+
+          <div class="system-status">
+            <span class="status-dot"></span>
+            <div>
+              <strong>Backend activo</strong>
+              <p>API conectada con MySQL.</p>
+            </div>
+          </div>
+
+          <div class="system-status">
+            <span class="status-dot"></span>
+            <div>
+              <strong>Autenticación lista</strong>
+              <p>Inicio de sesión con JWT.</p>
+            </div>
+          </div>
+
+          <div class="system-status">
+            <span class="status-dot"></span>
+            <div>
+              <strong>Dashboard conectado</strong>
+              <p>Datos obtenidos desde la base de datos.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel profile-card">
+          <div class="profile-avatar">
+            {{ usuario?.nombre?.charAt(0) || 'U' }}
+          </div>
+
+          <h3>{{ usuario?.nombre || 'Usuario' }}</h3>
+          <p>{{ usuario?.email || 'Sin correo registrado' }}</p>
+
+          <span class="role-badge">
+            {{ usuario?.rol || 'Sin rol' }}
+          </span>
+        </article>
+      </aside>
     </section>
   </main>
 </div>

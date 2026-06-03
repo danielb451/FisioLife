@@ -1,0 +1,57 @@
+<div class="page-container">
+  <header class="page-header">
+    <div>
+      <h1>Consultas de Pacientes</h1>
+      <p>Busca pacientes registrados y revisa su información básica.</p>
+    </div>
+
+    <a routerLink="/dashboard" class="btn-secondary">
+      Volver al dashboard
+    </a>
+  </header>
+
+  <section class="search-card">
+    <label for="buscar">Buscar paciente</label>
+    <input
+      id="buscar"
+      type="text"
+      placeholder="Buscar por nombre, apellido, CI o teléfono..."
+      [(ngModel)]="busqueda"
+    />
+  </section>
+
+  <section class="table-card">
+    <div class="table-header">
+      <h2>Listado de pacientes</h2>
+      <span>Total: {{ pacientesFiltrados.length }}</span>
+    </div>
+
+    <table *ngIf="pacientesFiltrados.length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Paciente</th>
+          <th>CI</th>
+          <th>Teléfono</th>
+          <th>Email</th>
+          <th>Motivo de consulta</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let paciente of pacientesFiltrados">
+          <td>{{ paciente.id }}</td>
+          <td>{{ paciente.nombre }} {{ paciente.apellido }}</td>
+          <td>{{ paciente.ci || 'Sin CI' }}</td>
+          <td>{{ paciente.telefono || 'Sin teléfono' }}</td>
+          <td>{{ paciente.email || 'Sin email' }}</td>
+          <td>{{ paciente.motivo_consulta || 'Sin motivo registrado' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="empty-state" *ngIf="pacientesFiltrados.length === 0">
+      No se encontraron pacientes.
+    </div>
+  </section>
+</div>

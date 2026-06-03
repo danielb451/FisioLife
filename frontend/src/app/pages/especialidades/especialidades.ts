@@ -1,28 +1,29 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { EspecialidadesService, Especialidad } from '../../services/especialidades.service';
+import { EspecialidadesService, Especialidad } from '../../services/especialidad.service';
 
 @Component({
   selector: 'app-especialidades',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './especialidades.html',
   styleUrl: './especialidades.css'
 })
 export class EspecialidadesComponent implements OnInit {
-
   especialidades: Especialidad[] = [];
-  mensaje = '';
-  error = '';
-  editando = false;
-  idEditando: number | null = null;
 
-  especialidad: Especialidad = {
+  nuevaEspecialidad: Especialidad = {
     nombre: '',
-    descripcion: ''
+    descripcion: '',
+    estado: 1
   };
+
+  editando = false;
+  especialidadEditandoId: number | null = null;
+
+  cargando = false;
+  error = '';
 
   constructor(private especialidadesService: EspecialidadesService) {}
 
@@ -31,74 +32,96 @@ export class EspecialidadesComponent implements OnInit {
   }
 
   cargarEspecialidades(): void {
-    this.especialidadesService.listar().subscribe({
-      next: (data) => {
+    this.cargando = true;
+
+    this.especialidadesService.obtenerEspecialidades().subscribe({
+      next: (data: Especialidad[]) => {
         this.especialidades = data;
+        this.cargando = false;
       },
-      error: () => {
-        this.error = 'Error al cargar especialidades';
+      error: (error: any) => {
+        console.error('Error al cargar especialidades:', error);
+        this.error = 'No se pudieron cargar las especialidades';
+        this.cargando = false;
       }
     });
   }
 
-  guardar(): void {
-    this.mensaje = '';
-    this.error = '';
-
-    if (!this.especialidad.nombre.trim()) {
-      this.error = 'El nombre es obligatorio';
+  guardarEspecialidad(): void {
+    if (!this.nuevaEspecialidad.nombre.trim()) {
+      this.error = 'El nombre de la especialidad es obligatorio';
       return;
     }
 
-    if (this.editando && this.idEditando !== null) {
-      this.especialidadesService.actualizar(this.idEditando, this.especialidad).subscribe({
-        next: (res) => {
-          this.mensaje = res.mensaje;
-          this.limpiar();
-          this.cargarEspecialidades();
-        }
-      });
+    if (this.editando && this.especialidadEditandoId !== null) {
+      this.especialidadesService
+        .actualizarEspecialidad(this.especialidadEditandoId, this.nuevaEspecialidad)
+        .subscribe({
+          next: (res: any) => {
+            this.cancelarEdicion();
+            this.cargarEspecialidades();
+          },
+          error: (error: any) => {
+            console.error('Error al actualizar especialidad:', error);
+            this.error = 'No se pudo actualizar la especialidad';
+          }
+        });
     } else {
-      this.especialidadesService.crear(this.especialidad).subscribe({
-        next: (res) => {
-          this.mensaje = res.mensaje;
-          this.limpiar();
+      this.especialidadesService.crearEspecialidad(this.nuevaEspecialidad).subscribe({
+        next: (res: any) => {
+          this.limpiarFormulario();
           this.cargarEspecialidades();
+        },
+        error: (error: any) => {
+          console.error('Error al crear especialidad:', error);
+          this.error = 'No se pudo crear la especialidad';
         }
       });
     }
   }
 
-  editar(e: Especialidad): void {
+  editarEspecialidad(especialidad: Especialidad): void {
     this.editando = true;
-    this.idEditando = e.id || null;
+    this.especialidadEditandoId = especialidad.id || null;
 
-    this.especialidad = {
-      nombre: e.nombre,
-      descripcion: e.descripcion || ''
+    this.nuevaEspecialidad = {
+      nombre: especialidad.nombre,
+      descripcion: especialidad.descripcion || '',
+      estado: especialidad.estado ?? 1
     };
   }
 
-  eliminar(id?: number): void {
+  eliminarEspecialidad(id: number | undefined): void {
     if (!id) return;
 
-    if (!confirm('¿Eliminar esta especialidad?')) return;
+    const confirmar = confirm('¿Seguro que deseas eliminar esta especialidad?');
 
-    this.especialidadesService.eliminar(id).subscribe({
-      next: (res) => {
-        this.mensaje = res.mensaje;
+    if (!confirmar) return;
+
+    this.especialidadesService.eliminarEspecialidad(id).subscribe({
+      next: (res: any) => {
         this.cargarEspecialidades();
+      },
+      error: (error: any) => {
+        console.error('Error al eliminar especialidad:', error);
+        this.error = 'No se pudo eliminar la especialidad';
       }
     });
   }
 
-  limpiar(): void {
+  cancelarEdicion(): void {
     this.editando = false;
-    this.idEditando = null;
+    this.especialidadEditandoId = null;
+    this.limpiarFormulario();
+  }
 
-    this.especialidad = {
+  limpiarFormulario(): void {
+    this.nuevaEspecialidad = {
       nombre: '',
-      descripcion: ''
+      descripcion: '',
+      estado: 1
     };
+
+    this.error = '';
   }
 }

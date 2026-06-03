@@ -1,9 +1,9 @@
 <div class="citas-page">
-
   <header class="page-header">
     <div>
+      <span class="page-label">Agenda clínica</span>
       <h1>Gestión de Citas</h1>
-      <p>Programa y administra las citas fisioterapéuticas de los pacientes.</p>
+      <p>Programa, edita y administra las citas fisioterapéuticas de los pacientes.</p>
     </div>
 
     <a routerLink="/dashboard" class="back-link">
@@ -11,10 +11,48 @@
     </a>
   </header>
 
-  <section class="content-grid">
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span class="stat-icon">📅</span>
+      <div>
+        <h3>{{ citas.length }}</h3>
+        <p>Total de citas</p>
+      </div>
+    </article>
 
+    <article class="stat-card">
+      <span class="stat-icon">🕘</span>
+      <div>
+        <h3>{{ totalHoy() }}</h3>
+        <p>Citas de hoy</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">✅</span>
+      <div>
+        <h3>{{ contarPorEstado('Confirmada') }}</h3>
+        <p>Confirmadas</p>
+      </div>
+    </article>
+
+    <article class="stat-card">
+      <span class="stat-icon">⏳</span>
+      <div>
+        <h3>{{ contarPorEstado('Pendiente') }}</h3>
+        <p>Pendientes</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="content-grid">
     <div class="form-card">
-      <h2>{{ editando ? 'Editar cita' : 'Registrar cita' }}</h2>
+      <div class="card-title">
+        <div>
+          <h2>{{ editando ? 'Editar cita' : 'Registrar cita' }}</h2>
+          <p>{{ editando ? 'Actualiza los datos de la cita seleccionada.' : 'Completa los datos para programar una nueva cita.' }}</p>
+        </div>
+      </div>
 
       <div class="alert success" *ngIf="mensaje">
         {{ mensaje }}
@@ -25,7 +63,6 @@
       </div>
 
       <form (ngSubmit)="guardarCita()">
-
         <label>Paciente *</label>
         <select name="paciente_id" [(ngModel)]="cita.paciente_id">
           <option [ngValue]="null">Seleccione un paciente</option>
@@ -37,30 +74,30 @@
         <div class="form-row">
           <div>
             <label>Fecha *</label>
-            <input 
+            <input
               type="date"
               name="fecha"
               [(ngModel)]="cita.fecha"
-            >
+            />
           </div>
 
           <div>
             <label>Hora *</label>
-            <input 
+            <input
               type="time"
               name="hora"
               [(ngModel)]="cita.hora"
-            >
+            />
           </div>
         </div>
 
         <label>Motivo de la cita *</label>
-        <input 
+        <input
           type="text"
           name="motivo"
           [(ngModel)]="cita.motivo"
           placeholder="Ej: Evaluación inicial, dolor lumbar, rehabilitación..."
-        >
+        />
 
         <label>Estado</label>
         <select name="estado" [(ngModel)]="cita.estado">
@@ -71,7 +108,7 @@
         </select>
 
         <label>Observaciones</label>
-        <textarea 
+        <textarea
           name="observaciones"
           rows="4"
           [(ngModel)]="cita.observaciones"
@@ -79,11 +116,11 @@
         ></textarea>
 
         <div class="buttons">
-          <button type="submit">
-            {{ editando ? 'Actualizar cita' : 'Guardar cita' }}
+          <button type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : (editando ? 'Actualizar cita' : 'Guardar cita') }}
           </button>
 
-          <button 
+          <button
             type="button"
             class="secondary"
             (click)="limpiarFormulario()"
@@ -92,24 +129,36 @@
             Cancelar
           </button>
         </div>
-
       </form>
     </div>
 
     <div class="table-card">
-
       <div class="table-header">
         <div>
           <h2>Lista de citas</h2>
-          <p>Total: {{ citasFiltradas.length }}</p>
+          <p>Total mostrado: {{ citasFiltradas.length }}</p>
         </div>
 
-        <input 
+        <button type="button" class="reload-btn" (click)="cargarCitas()">
+          Actualizar
+        </button>
+      </div>
+
+      <div class="filters">
+        <input
           type="text"
-          placeholder="Buscar por paciente, CI, estado..."
+          placeholder="Buscar por paciente, CI, teléfono, motivo o estado..."
           [(ngModel)]="busqueda"
           (input)="buscarCita()"
-        >
+        />
+
+        <select [(ngModel)]="filtroEstado" name="filtroEstado" (change)="aplicarFiltros()">
+          <option value="Todos">Todos los estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Confirmada">Confirmada</option>
+          <option value="Cancelada">Cancelada</option>
+          <option value="Finalizada">Finalizada</option>
+        </select>
       </div>
 
       <div class="loading" *ngIf="cargando">
@@ -131,7 +180,7 @@
 
           <tbody>
             <tr *ngFor="let c of citasFiltradas">
-              <td>
+              <td class="patient-cell">
                 <strong>{{ c.paciente_nombre }} {{ c.paciente_apellido }}</strong>
                 <small>CI: {{ c.paciente_ci || 'Sin CI' }}</small>
                 <small>Tel: {{ c.paciente_telefono || 'Sin teléfono' }}</small>
@@ -139,7 +188,7 @@
 
               <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td>
               <td>{{ c.hora }}</td>
-              <td>{{ c.motivo }}</td>
+              <td class="motivo-cell">{{ c.motivo }}</td>
 
               <td>
                 <span class="estado" [ngClass]="obtenerClaseEstado(c.estado)">
@@ -147,28 +196,27 @@
                 </span>
               </td>
 
-              <td class="actions">
-                <button class="edit" (click)="editarCita(c)">
-                  Editar
-                </button>
+              <td>
+                <div class="actions">
+                  <button class="edit" type="button" (click)="editarCita(c)">
+                    Editar
+                  </button>
 
-                <button class="delete" (click)="eliminarCita(c.id)">
-                  Eliminar
-                </button>
+                  <button class="delete" type="button" (click)="eliminarCita(c.id)">
+                    Eliminar
+                  </button>
+                </div>
               </td>
             </tr>
 
             <tr *ngIf="citasFiltradas.length === 0">
               <td colspan="6" class="empty">
-                No hay citas registradas.
+                No hay citas registradas con esos filtros.
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-
     </div>
-
   </section>
-
 </div>

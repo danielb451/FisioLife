@@ -1,104 +1,65 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { EspecialidadesService, Especialidad } from '../../services/especialidades.service';
+<div class="page-container">
+  <h1>Especialidades</h1>
 
-@Component({
-  selector: 'app-especialidades',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './especialidades.html',
-  styleUrl: './especialidades.css'
-})
-export class EspecialidadesComponent implements OnInit {
+  <form class="form-card" (ngSubmit)="guardarEspecialidad()">
+    <input
+      type="text"
+      placeholder="Nombre de la especialidad"
+      [(ngModel)]="nuevaEspecialidad.nombre"
+      name="nombre"
+    />
 
-  especialidades: Especialidad[] = [];
-  mensaje = '';
-  error = '';
-  editando = false;
-  idEditando: number | null = null;
+    <textarea
+      placeholder="Descripción"
+      [(ngModel)]="nuevaEspecialidad.descripcion"
+      name="descripcion"
+    ></textarea>
 
-  especialidad: Especialidad = {
-    nombre: '',
-    descripcion: ''
-  };
+    <div class="buttons">
+      <button type="submit">
+        {{ editando ? 'Actualizar' : 'Guardar' }}
+      </button>
 
-  constructor(private especialidadesService: EspecialidadesService) {}
+      <button type="button" *ngIf="editando" (click)="cancelarEdicion()">
+        Cancelar
+      </button>
+    </div>
+  </form>
 
-  ngOnInit(): void {
-    this.cargarEspecialidades();
-  }
+  <p *ngIf="cargando">Cargando especialidades...</p>
+  <p *ngIf="error" class="error">{{ error }}</p>
 
-  cargarEspecialidades(): void {
-    this.especialidadesService.listar().subscribe({
-      next: (data) => {
-        this.especialidades = data;
-      },
-      error: () => {
-        this.error = 'Error al cargar especialidades';
-      }
-    });
-  }
+  <table *ngIf="!cargando && especialidades.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Especialidad</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
 
-  guardar(): void {
-    this.mensaje = '';
-    this.error = '';
+    <tbody>
+      <tr *ngFor="let especialidad of especialidades">
+        <td>{{ especialidad.id }}</td>
+        <td>{{ especialidad.nombre }}</td>
+        <td>{{ especialidad.descripcion }}</td>
+        <td>{{ especialidad.estado === 1 ? 'Activo' : 'Inactivo' }}</td>
+        <td>
+          <button type="button" (click)="editarEspecialidad(especialidad)">
+            Editar
+          </button>
 
-    if (!this.especialidad.nombre.trim()) {
-      this.error = 'El nombre es obligatorio';
-      return;
-    }
+          <button type="button" (click)="eliminarEspecialidad(especialidad.id)">
+            Eliminar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-    if (this.editando && this.idEditando !== null) {
-      this.especialidadesService.actualizar(this.idEditando, this.especialidad).subscribe({
-        next: (res) => {
-          this.mensaje = res.mensaje;
-          this.limpiar();
-          this.cargarEspecialidades();
-        }
-      });
-    } else {
-      this.especialidadesService.crear(this.especialidad).subscribe({
-        next: (res) => {
-          this.mensaje = res.mensaje;
-          this.limpiar();
-          this.cargarEspecialidades();
-        }
-      });
-    }
-  }
-
-  editar(e: Especialidad): void {
-    this.editando = true;
-    this.idEditando = e.id || null;
-
-    this.especialidad = {
-      nombre: e.nombre,
-      descripcion: e.descripcion || ''
-    };
-  }
-
-  eliminar(id?: number): void {
-    if (!id) return;
-
-    if (!confirm('¿Eliminar esta especialidad?')) return;
-
-    this.especialidadesService.eliminar(id).subscribe({
-      next: (res) => {
-        this.mensaje = res.mensaje;
-        this.cargarEspecialidades();
-      }
-    });
-  }
-
-  limpiar(): void {
-    this.editando = false;
-    this.idEditando = null;
-
-    this.especialidad = {
-      nombre: '',
-      descripcion: ''
-    };
-  }
-}
+  <p *ngIf="!cargando && especialidades.length === 0">
+    No hay especialidades registradas.
+  </p>
+</div>
