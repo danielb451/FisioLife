@@ -1,0 +1,111 @@
+<div class="ia-page">
+
+  <header class="page-header">
+    <div>
+      <h1>Asistente IA Clínico</h1>
+      <p>
+        Apoyo para fisioterapeutas basado en datos del paciente,
+        consulta escrita e imagen opcional.
+      </p>
+    </div>
+
+    <a routerLink="/dashboard" class="back-link">
+      Volver al dashboard
+    </a>
+  </header>
+
+  <section class="content-grid">
+
+    <div class="form-card">
+
+      <h2>Consulta al asistente</h2>
+
+      <div class="alert success" *ngIf="mensaje">
+        {{ mensaje }}
+      </div>
+
+      <div class="alert error" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <label>Paciente *</label>
+      <select
+        name="pacienteId"
+        [(ngModel)]="pacienteId"
+      >
+        <option [ngValue]="null">
+          Selecciona un paciente
+        </option>
+
+        <option
+          *ngFor="let p of pacientes"
+          [ngValue]="p.id"
+        >
+          {{ p.nombre }} {{ p.apellido }} - CI: {{ p.ci || 'Sin CI' }}
+        </option>
+      </select>
+
+      <label>Consulta del fisioterapeuta</label>
+      <textarea
+        rows="6"
+        name="consulta"
+        [(ngModel)]="consulta"
+        placeholder="Ej: Paciente con dolor lumbar al flexionar el tronco. ¿Qué evaluaciones recomiendas?"
+      ></textarea>
+
+      <label>Imagen opcional</label>
+      <input
+        type="file"
+        accept="image/*"
+        (change)="seleccionarImagen($event)"
+      >
+
+      <div class="preview" *ngIf="imagenPreview">
+        <p>Vista previa:</p>
+        <img [src]="imagenPreview" alt="Imagen seleccionada">
+      </div>
+
+      <div class="buttons">
+        <button
+          type="button"
+          (click)="consultarIA()"
+          [disabled]="cargando"
+        >
+          {{ cargando ? 'Consultando IA...' : 'Consultar IA' }}
+        </button>
+
+        <button
+          type="button"
+          class="secondary"
+          (click)="limpiar()"
+        >
+          Limpiar
+        </button>
+      </div>
+
+      <p class="warning">
+        Esta IA es solo una herramienta de apoyo.
+        El diagnóstico final debe realizarlo el profesional responsable.
+      </p>
+
+    </div>
+
+    <div class="response-card">
+
+      <h2>Respuesta de la IA</h2>
+
+      <div class="empty" *ngIf="!respuestaIA && !cargando">
+        Todavía no hay respuesta. Selecciona un paciente y realiza una consulta.
+      </div>
+
+      <div class="loading" *ngIf="cargando">
+        Ollama está analizando la información...
+      </div>
+
+      <pre *ngIf="respuestaIA">{{ respuestaIA }}</pre>
+
+    </div>
+
+  </section>
+
+</div>

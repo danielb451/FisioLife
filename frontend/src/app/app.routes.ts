@@ -7,6 +7,7 @@ import { FisioterapeutasComponent } from './pages/fisioterapeutas/fisioterapeuta
 import { TratamientosComponent } from './pages/tratamientos/tratamientos';
 import { EvolucionesComponent } from './pages/evoluciones/evoluciones';
 import { EspecialidadesComponent } from './pages/especialidades/especialidades';
+import { AsistenteIaComponent } from './pages/asistente-ia/asistente-ia';
 import { authGuard } from './guards/auth-guard';
 
 export const routes: Routes = [
@@ -52,6 +53,11 @@ export const routes: Routes = [
   {
     path: 'especialidades',
     component: EspecialidadesComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'asistente-ia',
+    component: AsistenteIaComponent,
     canActivate: [authGuard]
   },
   {
